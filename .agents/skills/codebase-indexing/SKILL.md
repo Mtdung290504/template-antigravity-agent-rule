@@ -25,7 +25,7 @@ description: >-
      - Nếu `npx gitnexus` chưa cài hoặc báo lỗi, `Indexer` **dừng ngay lập tức** và báo cáo lên `Lead Agent`.
      - `Lead Agent` bắt buộc dùng `ask_question` trình bày cho User:
        1. **Hướng dẫn cài nhanh `GitNexus`:** Chạy `npm install -g gitnexus` hoặc dùng `npx gitnexus analyze` (yêu cầu Node.js $\ge 18$) để có đồ thị AST & Blast Radius chính xác 100%.
-       2. **Phân tích Quy trình Đọc Tĩnh Dự phòng (Static Fallback):** Nếu User từ chối cài `GitNexus`, Agent sẽ dùng quy trình 3 bước tĩnh: (a) Quét khai báo symbol bằng `ast-grep` / `ctags --output-format=json` / `rg`, (b) Quét câu lệnh `import`/`export`/`require` để dựng bảng phụ thuộc cấp file, (c) Đếm số lần xuất hiện tên hàm bằng `rg "\b<symbol>\b"` để ước lượng nhãn `[SHARED]` ($\ge 3$ nơi gọi). *Nhược điểm cần nêu rõ cho User:* Không bắt được lời gọi đa hình (polymorphism), alias đổi tên hoặc kế thừa nhiều tầng.
+       2. **Phân tích Quy trình Đọc Tĩnh Dự phòng (Static Fallback):** Nếu User từ chối cài `GitNexus`, Agent sẽ dùng quy trình 3 bước tĩnh: (a) Quét khai báo symbol bằng `ast-grep` / `ctags --output-format=json` / `rg`, (b) Quét câu lệnh `import`/`export`/`require` để dựng bảng phụ thuộc cấp file, (c) Đếm số lần xuất hiện tên hàm bằng `rg "\b<symbol>\b"` để ước lượng nhãn `[SHARED]` ($\ge 3$ nơi gọi). _Nhược điểm cần nêu rõ cho User:_ Không bắt được lời gọi đa hình (polymorphism), alias đổi tên hoặc kế thừa nhiều tầng.
      - **Chỉ khi User bấm đồng ý cho phép Fallback tĩnh**, `Indexer` mới được thực thi quy trình tĩnh trên.
    - **Giới hạn đọc code:** Chỉ mở `read_file` đọc 30–50 dòng đầu file hoặc docstring khi tên hàm chưa rõ nghĩa.
 3. **Gắn Nhãn Bán Kính Tác Động (`Blast Radius`):**
@@ -39,30 +39,37 @@ description: >-
 
 ```markdown
 # BẢN ĐỒ HỆ THỐNG TÀI LIỆU (DOCUMENTATION MAP)
+
 > Tra cứu tại **Bảng điều hướng nhanh (Mục 1)** hoặc **Chỉ mục phân tầng (Mục 2)**. Chỉ mở duy nhất file liên quan đến task; cấm đọc lan man.
 
 ## 1. Bảng Điều Hướng Nhanh
-| Bạn đang cần làm gì? | File duy nhất cần mở | Mô tả ngắn gọn |
-| :--- | :--- | :--- |
-| **Kiểm tra quyết định kiến trúc & Invariants** | [`docs/decisions/`](docs/decisions/) | Các thiết kế đã chốt, lý do "The Why" và phương án cấm mở lại. |
-| **Định vị file & hàm trong mã nguồn** | [`CODEBASE_MAP.md`](CODEBASE_MAP.md) | Ánh xạ Tính năng → File → Hàm/Class kèm nhãn `[CORE]`, `[SHARED]`. |
-| `<Nhu cầu cụ thể khác>` | `[<Tên file>](<Đường dẫn>)` | `<Mô tả cô đọng < 20 từ>` |
+
+| Bạn đang cần làm gì?                           | File duy nhất cần mở                 | Mô tả ngắn gọn                                                     |
+| :--------------------------------------------- | :----------------------------------- | :----------------------------------------------------------------- |
+| **Kiểm tra quyết định kiến trúc & Invariants** | [`docs/decisions/`](docs/decisions/) | Các thiết kế đã chốt, lý do "The Why" và phương án cấm mở lại.     |
+| **Định vị file & hàm trong mã nguồn**          | [`CODEBASE_MAP.md`](CODEBASE_MAP.md) | Ánh xạ Tính năng → File → Hàm/Class kèm nhãn `[CORE]`, `[SHARED]`. |
+| `<Nhu cầu cụ thể khác>`                        | `[<Tên file>](<Đường dẫn>)`          | `<Mô tả cô đọng < 20 từ>`                                          |
 
 ## 2. Chỉ Mục Phân Tầng
+
 ### A. File Dài (Chia theo Heading lớn — Cấm ghi số dòng)
+
 #### [`<Tên file>`](<Đường dẫn>)
+
 - **Phạm vi:** <Trách nhiệm cốt lõi>. | **Mở khi:** <Điều kiện kích hoạt rõ ràng>.
 - `## <Tên Heading 1>`: <Mô tả cô đọng nội dung kỹ thuật>.
 - **Từ khóa:** `keyword1`, `keyword2`, `symbol3`.
 
 ### B. File Ngắn / Micro-specs (< 150 dòng)
+
 - **[`<Tên file>`](<Đường dẫn>)**: <Phạm vi chính>. | **Mở khi:** <Điều kiện mở; đọc trọn vẹn>. | **Từ khóa:** `key1`, `key2`.
 
 ## 3. Bảng Đăng Ký & Đồng Bộ Tài Liệu (Doc Registry)
-| File Tài liệu | Phạm vi ánh xạ | Khi nào bắt buộc cập nhật? |
-| :--- | :--- | :--- |
-| `CODEBASE_MAP.md` | Toàn bộ mã nguồn | Khi thêm/xóa file, đổi tên hàm lớn hoặc đổi phụ thuộc `[SHARED]`. |
-| `docs/decisions/*.md` | Kiến trúc & Hợp đồng lõi | Khi chốt công nghệ mới hoặc hủy thiết kế cũ (cần User duyệt). |
+
+| File Tài liệu         | Phạm vi ánh xạ           | Khi nào bắt buộc cập nhật?                                        |
+| :-------------------- | :----------------------- | :---------------------------------------------------------------- |
+| `CODEBASE_MAP.md`     | Toàn bộ mã nguồn         | Khi thêm/xóa file, đổi tên hàm lớn hoặc đổi phụ thuộc `[SHARED]`. |
+| `docs/decisions/*.md` | Kiến trúc & Hợp đồng lõi | Khi chốt công nghệ mới hoặc hủy thiết kế cũ (cần User duyệt).     |
 ```
 
 ---
@@ -73,16 +80,20 @@ description: >-
 
 ```markdown
 # BẢN ĐỒ MÃ NGUỒN (CODEBASE & FEATURE MAP)
+
 > Neo theo định danh hàm/class và trách nhiệm nghiệp vụ; cấm ghi số dòng. Dùng `rg` tìm tên hàm trong backtick để lấy số dòng trước khi mở `read_file`.
 
 ## 1. Danh Mục Tập Tin Mã Nguồn Chính
-| File | Trách nhiệm duy nhất (Single Responsibility) | Phụ thuộc chính (Imports/Calls) |
-| :--- | :--- | :--- |
-| [`<path/file>`](<path/file>) | <Mô tả trực diện trách nhiệm trong 1 câu ngắn>. | `moduleA`, `moduleB` |
+
+| File                       | Trách nhiệm duy nhất (Single Responsibility)    | Phụ thuộc chính (Imports/Calls) |
+| :------------------------- | :---------------------------------------------- | :------------------------------ |
+| [`<path/file>`](path/file) | <Mô tả trực diện trách nhiệm trong 1 câu ngắn>. | `moduleA`, `moduleB`            |
 
 ## 2. Bản Đồ Tính Năng & Bán Kính Tác Động
+
 ### A. <Tên Cụm Tính Năng / Subsystem 1>
+
 - **<Chức năng nghiệp vụ cụ thể>**:
-  - **File:** [`<path/file>`](<path/file>) — Hàm/Class: `functionName(args)` | `ClassName.method`
-  - **Tác động:** `[SHARED]` (hoặc `[CORE]` / `[LEAF]`) | **Callers trực tiếp (Bắt buộc nếu `[SHARED]`/`[CORE]`):** [`<caller_file_1>`](<caller_file_1>) (`callerA`), [`<caller_file_2>`](<caller_file_2>) (`callerB`).
+  - **File:** [`<path/file>`](path/file) — Hàm/Class: `functionName(args)` | `ClassName.method`
+  - **Tác động:** `[SHARED]` (hoặc `[CORE]` / `[LEAF]`) | **Callers trực tiếp (Bắt buộc nếu `[SHARED]`/`[CORE]`):** [`<caller_file_1>`](caller_file_1) (`callerA`), [`<caller_file_2>`](caller_file_2) (`callerB`).
 ```

@@ -8,6 +8,7 @@
 ## 1. Kích Hoạt Skill Bắt Buộc (Batch Read 1 Turn)
 
 Khi nhận task lập hoặc cập nhật bản đồ, gọi `read_file` nạp đồng thời 2 Skill:
+
 1. [`.agents/skills/codebase-indexing/SKILL.md`](../skills/codebase-indexing/SKILL.md): Quy trình trinh sát 3 bước (`GitNexus` / `ripgrep`), quy tắc gắn nhãn `[CORE]`, `[SHARED]`, `[LEAF]` và khung mẫu Map.
 2. [`.agents/skills/high-signal-writing/SKILL.md`](../skills/high-signal-writing/SKILL.md): Quy chuẩn hành văn cô đọng, đơn nghĩa và checklist 5 điểm.
 
@@ -26,6 +27,7 @@ Khi nhận task lập hoặc cập nhật bản đồ, gọi `read_file` nạp �
 ## 3. Bàn Giao (`.agents/handoffs/<task-slug>.md`)
 
 Ghi báo cáo ngắn gọn gồm 3 mục rồi báo hoàn tất cho `Lead Agent`:
+
 1. Danh sách file Map đã tạo/cập nhật.
 2. Công cụ AST/search đã chạy thực tế.
 3. Danh sách hàm `[CORE]`/`[SHARED]` trọng yếu và các quyết định ngầm cần đề xuất đưa vào `docs/decisions/`.

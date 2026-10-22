@@ -20,6 +20,7 @@
 ## 2. Xác Minh Bán Kính Tác Động Tất Định (Deterministic Blast Radius)
 
 Khi sửa bất kỳ hàm, class, interface hoặc cấu hình nào (đặc biệt các mục gắn nhãn `[CORE]` hoặc `[SHARED]` trong `CODEBASE_MAP.md`), bắt buộc thực hiện tuần tự 3 bước:
+
 1. **Bước 1 — Chạy lệnh truy vết Callers (Cấm Fallback Ngầm):**
    - Mặc định bắt buộc chạy `npx gitnexus impact <symbol>` để lấy danh sách callers theo AST.
    - **Nếu máy chưa có `GitNexus` và `Init Manifest` chưa cho phép fallback:** Dừng ngay lập tức và báo lên `Lead Agent` (để `Lead` hỏi User cài `GitNexus` hoặc xin phép dùng fallback tĩnh). Chỉ được dùng `rg "\b<symbol>\b" --line-number` khi đã được User phê duyệt rõ trong `Init Manifest`.
@@ -33,30 +34,38 @@ Khi sửa bất kỳ hàm, class, interface hoặc cấu hình nào (đặc bi�
 
 Khi hoàn thành nhiệm vụ, ghi đầy đủ các mục dưới đây (mỗi trường 1 dòng riêng, không bỏ sót) vào file `.agents/handoffs/<task-slug>.md`, sau đó gửi 1 câu thông báo ngắn cho `Lead Agent`:
 
-```markdown
+````markdown
 # HANDOFF REPORT: <task-slug>
+
 - **Vai trò:** Worker Agent
 - **Loại Task:** `CODE_EXECUTION` | `GREENFIELD_SCAFFOLD` | `DEEP_WIKI`
 
 ## 1. Danh sách File Thay đổi
+
 - `[MODIFY / NEW]` `<path/file>`: <Mô tả ngắn gọn thay đổi đã thực hiện>
 
 ## 2. Bằng chứng Kiểm tra Bán kính Tác động (Bắt buộc với Task Code)
+
 - **Symbol đã sửa:** `functionName` (Nhãn: `[CORE]` / `[SHARED]` / `N/A nếu là Wiki`)
 - **Lệnh truy vết đã chạy:** `<npx gitnexus impact functionName | rg "\bfunctionName\b" --line-number>`
 - **Kết quả stdout nguyên văn:**
   ```text
   <Dán nguyên văn danh sách callers từ terminal vào đây>
   ```
+````
+
 - **Xác nhận Hợp đồng Callers:** <Xác nhận input/output/error tại từng caller không bị gãy>
 
 ## 3. Bằng chứng Kiểm thử Thực tế
+
 - **Lệnh test đã chạy:** `<exact test & typecheck command>`
 - **Kết quả thực tế:** `<Số lượng PASS / FAIL, trạng thái typecheck 0 errors>`
 
 ## 4. Đề xuất Đồng bộ Tài liệu
+
 - **Cần cập nhật `CODEBASE_MAP.md`?** `<Không / Có: nêu rõ hàm mới hoặc thay đổi caller>`
 - **Cần cập nhật `DOC_MAP.md` / Spec / ADR?** `<Không / Có: nêu rõ tên file và mục cần sửa>`
+
 ```
 
 ---
@@ -64,3 +73,4 @@ Khi hoàn thành nhiệm vụ, ghi đầy đủ các mục dưới đây (mỗi 
 ## 4. Quyền Phản Biện Ngược Với Audit Agent
 
 Ở vòng sửa đổi (retry round), nếu nhận thấy yêu cầu bắt lỗi của `Audit Agent` bị sai cơ chế kỹ thuật, vi phạm YAGNI hoặc trái với `docs/decisions/`, Worker có nghĩa vụ **gửi bằng chứng code/test phản biện lại lên `Lead Agent`** để trình User phân xử, không mù quáng sửa theo.
+```

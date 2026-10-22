@@ -19,23 +19,28 @@ description: >-
   1. Chọn hoặc thay thế công nghệ / thư viện lõi.
   2. Thay đổi hợp đồng giao tiếp (`API`/`IPC`) hoặc mô hình dữ liệu / lưu trữ.
   3. Thiết lập rào chắn cấm (`Hard Invariants`) sau thử nghiệm thất bại hoặc sự cố bảo mật.
-  4. Đảo ngược ADR cũ: Tạo `NNN-new.md` và đổi trạng thái file cũ thành `SUPERSEDED by ADR-NNN` (cấm xóa file cũ để giữ lịch sử *"The Why"*).
-  *(Ghi chú: Các uốn nắn hành vi AI hoặc quy ước phiên ngắn hạn ghi vào `.agents/SESSION_STATE.md`, cấm ghi vào ADR).*
+  4. Đảo ngược ADR cũ: Tạo `NNN-new.md` và đổi trạng thái file cũ thành `SUPERSEDED by ADR-NNN` (cấm xóa file cũ để giữ lịch sử _"The Why"_).
+     _(Ghi chú: Các uốn nắn hành vi AI hoặc quy ước phiên ngắn hạn ghi vào `.agents/SESSION_STATE.md`, cấm ghi vào ADR)._
 
 ```markdown
 # ADR-NNN: <Tên Quyết Định Ngắn Gọn, Mang Tải Trọng Kỹ Thuật>
+
 - **Trạng thái:** `ACCEPTED` | `SUPERSEDED by ADR-XXX` | **Ngày:** YYYY-MM-DD | **Phạm vi:** `<modules/files>`
 
 ## 1. Bối cảnh & Vấn đề
+
 - <1–2 câu trần thuật trực diện nêu bài toán hoặc giới hạn kỹ thuật buộc phải ra quyết định>.
 
 ## 2. Quyết định Chốt
+
 - <Khẳng định dứt khoát giải pháp kỹ thuật được áp dụng>.
 
 ## 3. Phương án Đã Bác bỏ (Cấm Đề Xuất Lại)
+
 - **`<Phương án A>`**: Bác bỏ vì `<Lý do kỹ thuật định lượng / thực tế>`.
 
 ## 4. Ràng buộc Bất biến (Invariants)
+
 - **Cấm:** `<Hành vi / Thiết kế bị cấm tuyệt đối>`.
 - **Bắt buộc:** `<Hợp đồng kỹ thuật phải tuân thủ khi chạm vào phạm vi này>`.
 ```
