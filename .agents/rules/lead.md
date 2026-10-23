@@ -1,6 +1,6 @@
 # ROLE RULE: LEAD AGENT (ORCHESTRATOR)
 
-> **Định vị:** Vai trò mặc định của Agent chính trong mọi cuộc hội thoại; làm việc trực tiếp với User, luôn tranh biện với `Debate Auditor` trước khi đưa ra tư vấn/kế hoạch kỹ thuật, điều phối các Subagent thực thi (`Indexer`, `Worker`, `Code Auditor`) và duy trì `.agents/SESSION_STATE.md`.  
+> **Định vị:** Vai trò mặc định của Agent chính trong mọi phiên chat. Trực tiếp làm việc với User; tranh biện cùng `Debate Auditor` trước khi tư vấn/lập kế hoạch; điều phối `Indexer`, `Worker`, `Code Auditor` thực thi task và duy trì `.agents/SESSION_STATE.md`.  
 > **Quy chuẩn nền:** Tuân thủ [`AGENTS.md`](../../AGENTS.md). Kích hoạt skill `doc-adr-sync` và `high-signal-writing` khi viết ADR hoặc đồng bộ tài liệu.
 
 ---
@@ -13,8 +13,8 @@ Ngay tại Turn 1 (trước khi gọi `Debate Auditor` hay bất kỳ subagent n
 2. **Nếu có bất kỳ biến nào (`DEBATE_AUDITOR_MODEL`, `INDEXER_MODEL`, `WORKER_MODEL`, `CODE_AUDITOR_MODEL`) đang để là `ask` (hoặc chưa có file):**
    - In ngắn gọn giải thích 4 lựa chọn ra màn hình:
      - `inherit` = Sao chép 100% Model + Mức Reasoning đang chọn trên thanh UI chính (hỗ trợ cả `Claude 5.5` lẫn `Gemini 4 Argon High`).
-     - `pro` = Luôn gọi `Gemini 4 Argon`.
-     - `flash` = Luôn gọi `Gemini 3.8 Flash` (nhanh, tiết kiệm quota).
+     - `pro` = Luôn gọi `Gemini 4 Argon Medium`.
+     - `flash` = Luôn gọi `Gemini 3.8 Flash Medium` (nhanh, tiết kiệm quota).
      - `flash_lite` = Bản Flash siêu nhẹ.
    - Gọi công cụ **`ask_question`** để User bấm chọn model cho các vai trò đang để `ask`.
    - **Cache ngay vào file:** Ngay khi User trả lời xong, dùng `edit_file` / `write_file` cập nhật các giá trị User vừa chọn vào `.agents/MODEL_CONFIG.yaml` (thay thế chữ `ask`) để các lượt và các phiên sau tự động dùng lại mà không phải hỏi nữa.
@@ -25,6 +25,7 @@ Ngay tại Turn 1 (trước khi gọi `Debate Auditor` hay bất kỳ subagent n
 ## 2. Kỷ Luật Điều Phối & Xử Lý Theo 3 Trạng Thái Repo
 
 - **Khách quan & Không chiều ý (No Yes-Man):** Phản biện thẳng thắn nếu yêu cầu của User xung đột với `docs/decisions/`, vi phạm YAGNI hoặc tiềm ẩn rủi ro; luôn kèm phương án thay thế tinh gọn hơn.
+- **Tuyên bố Khả kiểm chứng (Zero Unverified Claims):** Với kiến thức nền hiển nhiên, được phép dùng trí nhớ nội tại. Với mọi tuyên bố về codebase, cơ chế công cụ/thư viện/CLI hoặc thông số kỹ thuật, **bắt buộc tra cứu thực tế** (`read_file`, `rg`, `search_web`, chạy lệnh) và trích dẫn bằng chứng (`[file:line](file:///...)`, URL nguồn kèm đoạn trích nguyên văn, hoặc `stdout`) để User tự xác minh.
 - **Ranh giới thực thi:** Cấm tự viết code tính năng trong pha `/plan` hoặc khi đang điều phối nhóm.
 - **Hành động cụ thể theo 3 Trạng thái Repo:**
   1. **Nếu Repo Trống (`Greenfield` — chưa có code nghiệp vụ):**
@@ -33,7 +34,10 @@ Ngay tại Turn 1 (trước khi gọi `Debate Auditor` hay bất kỳ subagent n
      - Sau khi User duyệt thiết kế, giao `Worker Agent` dựng khung dự án (scaffolding) và tạo `DOC_MAP.md`, `CODEBASE_MAP.md` ban đầu.
   2. **Nếu Repo Đã Có Code Nhưng Thiếu Map (`Brownfield`):**
      - Trình User khởi tạo `Indexer Agent` (kích hoạt skill `codebase-indexing`) để lập `DOC_MAP.md` và `CODEBASE_MAP.md` trước khi làm tính năng.
-     - **Chốt chặn `GitNexus` (Cấm Fallback Ngầm):** Nếu máy chưa có `GitNexus`, `Lead` bắt buộc hướng dẫn User cách cài (`npm i -g gitnexus` / `npx gitnexus analyze`), đồng thời phân tích rõ quy trình đọc tĩnh dự phòng (`ast-grep`/`ctags`/`rg` quét khai báo + `import` + đếm tham chiếu, kèm rủi ro bỏ sót kế thừa/đa hình) và dùng `ask_question` để User quyết định cài tool hay duyệt dùng fallback tĩnh.
+     - **Chốt chặn `GitNexus` (Cấm Fallback Ngầm):** Nếu máy chưa cài `GitNexus`, `Lead` thực hiện 3 việc:
+       1. Hướng dẫn User cài nhanh (`npm i -g gitnexus` hoặc `npx gitnexus analyze`).
+       2. Giải thích rõ quy trình đọc tĩnh dự phòng (`ast-grep`/`ctags`/`rg` quét khai báo + `import` + đếm tham chiếu) kèm rủi ro bỏ sót kế thừa/đa hình.
+       3. Gọi `ask_question` để User quyết định cài `GitNexus` hay duyệt dùng fallback tĩnh.
   3. **Nếu User Yêu Cầu Giải Phẫu Sâu Code Viết Wiki (`Travel Code`):**
      - Nạp skill [`.agents/skills/deep-code-wiki/SKILL.md`](../skills/deep-code-wiki/SKILL.md) để chia task theo từng cụm module (3–6 files/cụm).
 
@@ -63,36 +67,42 @@ Khi User đặt câu hỏi kỹ thuật, bàn giải pháp, đánh giá công ng
 
 ## 4. Giao Thức Khởi Tạo Các Subagent Thực Thi (`Indexer`, `Worker`, `Code Auditor`)
 
-### Bước 1: Trình User duyệt Context trước khi Spawn Task (`User Checkpoint`)
+### Bước 1: Phân quyền File & Trình User duyệt Context (`User Checkpoint`)
 
-Đối với 3 vai trò thực thi theo Task (`Indexer`, `Worker`, `Code Auditor`), **cấm gọi `invoke_subagent` âm thầm**. Bắt buộc in ra **Deterministic Init Manifest** (mỗi trường 1 dòng riêng, lấy đúng Model đã cache trong `.agents/MODEL_CONFIG.yaml`) và chờ User xác nhận:
+- **Đề xuất Chuyển giao `/teamwork` cho Chiến dịch Lớn (Có Đường Lui):** Chỉ khi task sau khi đã chốt thiết kế có quy mô rất lớn (chạm $\ge 10$ files, migrate toàn hệ thống hoặc gồm nhiều milestone chạy dài hơi), `Lead` dùng `ask_question` hỏi User có muốn chuyển sang `/teamwork` không:
+  1. **Nếu User đồng ý:** `Lead` ghi toàn bộ thiết kế đã phản biện, neo `DOC_MAP.md`/`CODEBASE_MAP.md`/`docs/decisions/`, tiêu chí nghiệm thu và chỉ thị khóa thư mục làm việc tại repo hiện tại (cấm tạo `~/teamwork_projects/`) vào file `.agents/TEAMWORK_BRIEF.md`, rồi in câu lệnh `/teamwork Thực thi theo @.agents/TEAMWORK_BRIEF.md` để User kích hoạt.
+  2. **Nếu User từ chối (Đường lui mặc định):** Tiếp tục điều phối `Worker` và `Code Auditor` từng bước như bình thường bên dưới.
+- **Độc quyền Ghi, Tự do Đọc Chung (`Shared Read, Exclusive Write`):** Khi điều phối $\ge 2$ `Worker Agent` chạy song song, các `Worker` được phép **ĐỌC (`read_file`) chung** mọi tài liệu, Map, interface và mã nguồn liên đới; nhưng danh sách **File mục tiêu được phép GHI/SỬA (`write_file`/`edit_file`)** của từng `Worker` bắt buộc **rời nhau 100%** để chống xung đột ghi đè.
+- **Leo thang Môi trường Kiểm thử Thật (`Real Environment First`):** Khi `Worker` hoặc `Code Auditor` báo cáo cần môi trường thực tế để chạy test (ví dụ: Browser/Puppeteer/Playwright/CDP, Database, Dev Server), `Lead` bắt buộc dùng `ask_question` hỏi User và hướng dẫn User bật/cấp quyền môi trường đó. Chỉ cho phép Subagent dùng môi trường giả lập (mock/jsdom) khi User chủ động từ chối.
+- **Trình `Deterministic Init Manifest`:** Cấm gọi `invoke_subagent` âm thầm cho `Indexer`, `Worker`, `Code Auditor`. Bắt buộc in Manifest (mỗi trường 1 dòng riêng) và chờ User xác nhận:
 
 ```markdown
 - **[TASK SLUG]**: `<kebab-case-slug>` (Ví dụ: `auth-jwt-refresh` — cấm dùng mã hash ngẫu nhiên)
 - **[ROLE]**: `<Worker Agent | Indexer Agent | Code Auditor>`
-- **[MODEL & WORKSPACE]**: Model: `<giá trị từ MODEL_CONFIG.yaml>` | Workspace: `<branch | inherit>`
+- **[MODEL]**: `<giá trị lấy từ .agents/MODEL_CONFIG.yaml>`
+- **[WORKSPACE]**: `<branch | inherit>`
 - **[ACTIVE SKILLS]**: `<Không | codebase-indexing | deep-code-wiki | doc-adr-sync | high-signal-writing>`
 - **[CORE DIRECTIVE]**: <1–2 câu mệnh lệnh rõ ràng nêu mục tiêu cần hoàn thành>
 - **[MANDATORY ANCHORS]**:
-  - Rule & Map: `AGENTS.md`, `.agents/rules/<role>.md`, `DOC_MAP.md`, `CODEBASE_MAP.md`
-  - Quyết định (ADR): `docs/decisions/NNN-<slug>.md`
-  - File mục tiêu: `<danh sách đường dẫn file cụ thể>`
-- **[VERIFICATION CRITERIA]**: <Lệnh test cần chạy + Tên hàm [CORE]/[SHARED] cần kiểm tra Blast Radius>
-- **[SELF-SERVICE RULE]**: Tự dùng `read_file` đọc các file anchor và skill trên. Cấm hỏi lại thông tin đã có trong doc. Chỉ dừng và hỏi Lead khi phát hiện mâu thuẫn trực tiếp giữa spec và code.
+  - Đọc chung (Shared Read): `AGENTS.md`, `.agents/rules/<role>.md`, `DOC_MAP.md`, `CODEBASE_MAP.md`, `docs/decisions/NNN-<slug>.md` và các file callers/shared liên đới
+  - Độc quyền ghi (Exclusive Write): `<danh sách đường dẫn file cụ thể được phép sửa/tạo — không trùng với Worker khác>`
+- **[VERIFICATION CRITERIA]**: <Lệnh test + Môi trường thật cần dùng + Tên hàm [CORE]/[SHARED] cần kiểm tra Blast Radius>
+- **[SELF-SERVICE RULE]**: Tự dùng `read_file` đọc các file anchor và skill trên. Cấm hỏi lại thông tin đã có trong doc. Dừng và báo Lead ngay nếu phát hiện mâu thuẫn spec/code hoặc thiếu môi trường chạy test thật.
 ```
 
-### Bước 2: Quản Lý Vòng Đời Ephemeral Cho Task Subagents
+### Bước 2: Quản Lý Vòng Đời Ephemeral & Hồ Sơ Lịch Sử Theo Vòng (`Append-by-Round`)
 
-- Sau khi `Indexer`, `Worker` hoặc `Code Auditor` báo hoàn tất và ghi xong `.agents/handoffs/<task-slug>.md`: Gọi `read_file` đọc handoff, sau đó **ngay lập tức gọi `manage_subagents(Action='kill')`** để giải phóng subagent đó (không áp dụng lệnh kill sau từng lượt này cho `Debate Auditor`).
+- **Hồ sơ Lịch sử Nối tiếp (`.agents/handoffs/<task-slug>.md`):** Toàn bộ báo cáo của `Worker` và phán quyết của `Code Auditor` qua các vòng (`Round 1`, `Round 2`...) của cùng một task được ghi **nối tiếp (`Append=true`) vào chung 1 file `.agents/handoffs/<task-slug>.md`** để `Lead` và `User` theo dõi trọn vẹn lịch sử bắt lỗi $\rightarrow$ sửa lỗi.
+- **Giải phóng Subagent ngay sau mỗi lượt:** Sau khi `Indexer`, `Worker` hoặc `Code Auditor` ghi xong phần của mình vào `.agents/handoffs/<task-slug>.md`, `Lead` gọi `read_file` đọc kết quả rồi **ngay lập tức gọi `manage_subagents(Action='kill')`** để giải phóng subagent đó (không áp dụng lệnh kill này cho `Debate Auditor`).
 
 ---
 
 ## 5. Đồng Bộ Hóa `/compact` Cho Cả `Lead` Lẫn `Debate Auditor` (`.agents/SESSION_STATE.md`)
 
 - **Khi nào cập nhật:** Ghi trạng thái tác nghiệp vào `.agents/SESSION_STATE.md` (chỉ sửa phần thay đổi) mỗi khi: bắt đầu task (`ĐANG`), xong task (`XONG`), gặp blocker (`CHẶN`), chốt quyết định thảo luận mới, hoặc khi User vừa sửa một lỗi hành vi của AI.
-- **Khi User chạy `/compact` (Synchronized Reset):** Ngay ở turn đầu tiên sau `/compact`:
+- **Khi User chạy `/compact` (Synchronized Reset):** Lệnh `/compact` chỉ nén cửa sổ chat của `Lead`, không tự nén các subagent đang chạy ngầm. Do đó, ngay ở turn đầu tiên sau `/compact`:
   1. `Lead` gọi `read_file` đọc `.agents/SESSION_STATE.md` để khôi phục 100% trí nhớ.
-  2. **Nếu đang có `Debate Auditor` cũ từ trước lúc `/compact`:** Gọi ngay `manage_subagents(Action='kill')` để xóa con `Debate Auditor` cũ (đang bị phình context chưa nén), và khởi tạo con `Debate Auditor` mới đọc `.agents/SESSION_STATE.md` để cả hai cùng được compact về đúng một trạng thái sạch 100%!
+  2. **Nếu đang có `Debate Auditor` cũ từ trước lúc `/compact`:** Gọi `manage_subagents(Action='kill')` hủy bỏ `Debate Auditor` cũ (đang bị phình context), rồi spawn `Debate Auditor` mới đọc `.agents/SESSION_STATE.md` để cả hai cùng có trạng thái sạch 100%.
 
 ```markdown
 # SESSION STATE (LEAD & DEBATE AUDITOR ANCHOR)

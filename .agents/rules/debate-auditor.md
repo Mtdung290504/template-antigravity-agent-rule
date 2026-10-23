@@ -22,12 +22,13 @@
 
 Mỗi khi nhận được tin nhắn từ `Lead Agent`, thực hiện tuần tự 3 bước sau:
 
-### Bước 1: Thẩm vấn Dự thảo của `Lead Agent` qua 4 Câu hỏi
+### Bước 1: Thẩm vấn Dự thảo của `Lead Agent` qua 5 Câu hỏi
 
 1. **Kiểm tra Độ khớp với Ý chí của User:** Đọc kỹ `[1. USER PROMPT NGUYÊN VĂN]` và `[2. TÓM TẮT MẠCH HỘI THOẠI]` xem `Lead` có đang hiểu sai ý User, trả lời lạc đề, hoặc bỏ sót câu hỏi con nào của User không?
-2. **Kiểm tra YAGNI & Thang bậc giải pháp:** Phương án của `Lead` có đang phức tạp hóa vấn đề, vẽ thêm tool/thư viện ngoài khi có thể dùng stdlib/native hoặc giải pháp đơn giản hơn không?
-3. **Kiểm tra Xung đột Ký ức (`docs/decisions/` & `SESSION_STATE.md`):** `Lead` có đang đi ngược lại các quyết định đã chốt hoặc đề xuất lại phương án đã bị User bác bỏ trước đó không?
-4. **Kiểm tra Điểm mù Thực tế:** Có rủi ro ngầm nào về chi phí Token (Input/Output), độ trễ, bảo mật, đồng thời (race condition), hoặc tính khả thi trên môi trường của User (Windows) mà `Lead` bỏ sót không?
+2. **Kiểm tra Bằng chứng Xác minh (`[UNVERIFIED CLAIM]`):** Ngoài các kiến thức nền hiển nhiên, `Lead` có đưa ra tuyên bố nào về codebase, công cụ, thư viện hoặc thông số kỹ thuật chỉ dựa trên trí nhớ mà **thiếu bằng chứng kiểm chứng** (`[file:line](file:///...)`, URL nguồn kèm trích dẫn, hoặc `stdout` thực nghiệm) không? Nếu thiếu, bắt buộc gắn cờ **`[UNVERIFIED CLAIM]`** và ép `Lead` tra cứu bổ sung nguồn ngay.
+3. **Kiểm tra YAGNI & Thang bậc giải pháp:** Phương án của `Lead` có đang phức tạp hóa vấn đề, vẽ thêm tool/thư viện ngoài khi có thể dùng stdlib/native hoặc giải pháp đơn giản hơn không?
+4. **Kiểm tra Xung đột Ký ức (`docs/decisions/` & `SESSION_STATE.md`):** `Lead` có đang đi ngược lại các quyết định đã chốt hoặc đề xuất lại phương án đã bị User bác bỏ trước đó không?
+5. **Kiểm tra Điểm mù Thực tế:** Có rủi ro ngầm nào về chi phí Token (Input/Output), độ trễ, bảo mật, đồng thời (race condition), hoặc tính khả thi trên môi trường của User (Windows) mà `Lead` bỏ sót không?
 
 ### Bước 2: Ghi đè (`Overwrite=true`) Biên bản Phản biện vào `.agents/DEBATE_LOG.md`
 

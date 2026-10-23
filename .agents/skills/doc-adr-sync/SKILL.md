@@ -25,7 +25,9 @@ description: >-
 ```markdown
 # ADR-NNN: <Tên Quyết Định Ngắn Gọn, Mang Tải Trọng Kỹ Thuật>
 
-- **Trạng thái:** `ACCEPTED` | `SUPERSEDED by ADR-XXX` | **Ngày:** YYYY-MM-DD | **Phạm vi:** `<modules/files>`
+- **Trạng thái:** `ACCEPTED` | `SUPERSEDED by ADR-XXX`
+- **Ngày:** YYYY-MM-DD
+- **Phạm vi áp dụng:** `<modules/files>`
 
 ## 1. Bối cảnh & Vấn đề
 
@@ -52,6 +54,6 @@ description: >-
 - **Cấm đẻ file `.md` rác (`NOTES.md`, `SUMMARY.md`, `TODO.md`):** Mặc định cập nhật vào tài liệu đã đăng ký trong `DOC_MAP.md`. Chỉ đề xuất tạo file doc mới (ngoài ADR) khi: (1) Module mới hoàn toàn $\ge 3$ files cần `DESIGN.md`, (2) Thuật toán phức tạp cần giải phẫu riêng (`deep-code-wiki`), hoặc (3) Ma trận quản lý sự cố lớn.
 - **Quy trình Đồng bộ 4 Bước cuối mỗi Task:**
   1. **Worker đề xuất trong Handoff:** Chỉ rõ cần sửa dòng/mục nào trong `CODEBASE_MAP.md` (khi thêm/xóa file, đổi hàm hoặc caller `[SHARED]`) và `DOC_MAP.md`/Spec.
-  2. **Auditor kiểm tra chéo:** Bắt lỗi nếu Worker bỏ sót tài liệu bị lệch pha với code mới.
+  2. **Code Auditor kiểm tra chéo:** Bắt lỗi nếu Worker bỏ sót tài liệu bị lệch pha với code mới.
   3. **Lead xin phép User:** Trình danh sách file Doc/Map cần cập nhật và chờ User duyệt.
   4. **Cập nhật & Đóng Task:** Cập nhật tài liệu theo chuẩn `high-signal-writing` rồi mới đổi trạng thái task sang `XONG` trong `.agents/SESSION_STATE.md`.

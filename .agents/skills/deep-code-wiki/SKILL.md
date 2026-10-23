@@ -28,12 +28,12 @@ description: >-
   2. **Lần vết luồng dữ liệu end-to-end:** Đi từ `Entrypoint` $\rightarrow$ qua các bước biến đổi dữ liệu $\rightarrow$ các nhánh điều kiện chắn lỗi (`Guard clauses`) $\rightarrow$ `Output / Side-effects`.
   3. **Bóc tách các quyết định ngầm trong code:** Ghi nhận các đoạn xử lý trường hợp biên đặc biệt, các hằng số giới hạn cứng (`timeouts`, `buffer limits`, `retry counts`) và cơ chế khóa đồng thời (`locks`, `queues`).
 
-### Bước 3: Kiểm Định Thực Chứng (`VERIFY` — Giao `Audit Agent`)
+### Bước 3: Kiểm Định Thực Chứng (`VERIFY` — Giao `Code Auditor`)
 
-- `Audit Agent` mở bài Wiki vừa viết đối chiếu trực tiếp với file mã nguồn thật của cụm đó:
+- `Code Auditor` mở bài Wiki vừa viết đối chiếu trực tiếp với file mã nguồn thật của cụm đó:
   - Kiểm tra tên hàm, tham số, mã lỗi và công thức nêu trong Wiki có khớp 100% với code thật không?
   - Luồng thuật toán mô tả trong Wiki có bỏ sót nhánh rẽ hoặc điều kiện chặn lỗi quan trọng nào trong code không?
-- Sau khi `Audit Agent` phán quyết `[APPROVED]`, cập nhật đường dẫn file Wiki mới vào `DOC_MAP.md`.
+- Sau khi `Code Auditor` phán quyết `[APPROVED]`, cập nhật đường dẫn file Wiki mới vào `DOC_MAP.md`.
 
 ---
 

@@ -28,6 +28,7 @@
 - **Cấm thuật toán tạm bợ:** Không dùng regex hay heuristic sơ sài thay cho parser/thuật toán chuẩn.
 - **Minh bạch phạm vi:** Triển khai bản tinh gọn hoàn chỉnh; nêu rõ hạng mục chủ động hoãn (`defer`) kèm lý do.
 - **Bắt buộc kiểm chứng:** Mọi logic không tầm thường phải có test chạy thực tế trước khi bàn giao.
+- **Tuyên bố Khả kiểm chứng (Verifiable Claims):** Kiến thức nền hiển nhiên được dùng trí nhớ; mọi tuyên bố về codebase, công cụ, thư viện hoặc thông số kỹ thuật bắt buộc tra cứu thực tế và trích nguồn (`[file:line](file:///...)`, URL gốc kèm quote, hoặc `stdout`) để User đối chiếu. Cấm phán đoán bằng trí nhớ suông.
 
 ---
 
@@ -37,8 +38,8 @@
 
 | Trạng thái Repo | Dấu hiệu nhận biết | Luồng điều phối bắt buộc |
 | :--- | :--- | :--- |
-| **1. `Greenfield`** | Chưa có mã nguồn nghiệp vụ (mới `git init`). | **Cấm gọi `Indexer`.** Chỉ `Lead` + `Debate Auditor` bàn thiết kế & ADR đầu tiên (`docs/decisions/001-*.md`). User duyệt xong $\rightarrow$ `Worker` dựng khung code và tạo `DOC_MAP.md`, `CODEBASE_MAP.md` ban đầu. |
-| **2. `Brownfield`** | Đã có code nhưng thiếu `DOC_MAP.md` hoặc `CODEBASE_MAP.md`. | **Cấm đọc code mù.** `Lead` điều động `Indexer` (bật skill `codebase-indexing`) chạy AST/GitNexus sinh 2 file Map trước khi làm tính năng. |
+| **1. `Greenfield`** | Chưa có mã nguồn nghiệp vụ (mới `git init`). | **Cấm gọi `Indexer`** (vì chưa có code để quét AST). Chỉ `Lead` + `Debate Auditor` bàn thiết kế & lập ADR đầu tiên (`docs/decisions/001-*.md`). Khi User duyệt xong $\rightarrow$ giao `Worker` dựng khung code và khởi tạo `DOC_MAP.md`, `CODEBASE_MAP.md`. |
+| **2. `Brownfield`** | Đã có code nhưng thiếu `DOC_MAP.md` hoặc `CODEBASE_MAP.md`. | **Cấm đọc code mù** (tránh tràn context). `Lead` điều động `Indexer` (bật skill `codebase-indexing`) chạy AST/GitNexus sinh 2 file Map trước khi làm tính năng. |
 | **3. `Steady`** | Đã có cả code lẫn `DOC_MAP.md`, `CODEBASE_MAP.md`. | Áp dụng ngay **Quy trình tra cứu 3 bước** tại Mục IV. |
 
 ### 2. Cơ chế Bảo hiểm 3 Lớp Bất biến
@@ -46,7 +47,7 @@
 2. **Lớp 2 — Bán kính Tác động (`Blast Radius`):** Hàm/class trong `CODEBASE_MAP.md` gắn nhãn `[CORE]`, `[SHARED]` ($\ge 3$ callers) hoặc `[LEAF]`. Khi sửa `[CORE]`/`[SHARED]`, `Worker` bắt buộc chạy lệnh truy vết AST (`npx gitnexus impact <symbol>`) và dán nguyên văn `stdout` vào handoff. **Cấm tự ý fallback ngầm** sang công cụ tìm kiếm text (`rg`/`ctags`) khi chưa hỏi và được User phê duyệt.
 3. **Lớp 3 — Chốt chặn Kiểm định Kép (`Dual Audit Gate`):**
    - **`Debate Auditor`:** Phản biện trực tiếp mọi tư vấn kỹ thuật và kế hoạch của `Lead`, ghi đè vào `.agents/DEBATE_LOG.md`.
-   - **`Code Auditor`:** Độc lập kiểm tra code/test/Wiki của `Worker` (`CODE_AUDIT`) trước khi trình User.
+   - **`Code Auditor`:** Độc lập kiểm tra tĩnh code/Wiki của `Worker`, đồng thời **trực tiếp viết & chạy test phá hoại thực dụng (`Lazy Senior Adversarial Tests`)** trên môi trường thật trước khi trình User.
 
 ---
 
@@ -61,17 +62,21 @@
 | **`.agents/SESSION_STATE.md`**| **Chỉ đọc** (Đồng bộ với Lead) | Cấm đọc/ghi | Cấm đọc/ghi | Cấm đọc/ghi | **Chỉ `Lead` ghi** để khôi phục sau `/compact`. |
 | **`.agents/DEBATE_LOG.md`** | **Ghi đè (`Overwrite`)** | Không đọc/ghi | Không đọc/ghi | Không đọc/ghi | User mở đọc phản biện trực tiếp; `Lead` gắn link. |
 | **`.agents/handoffs/*.md`** | Không đọc/ghi | Ghi báo cáo | Ghi báo cáo | Ghi phán quyết | `Lead` đọc nghiệm thu và `kill` subagent. |
-| **Mã nguồn / Wiki / Test** | Chỉ đọc | Chỉ đọc | **Ghi (Trong Scope)** | Chỉ đọc (Soi diff) | `Lead` nghiệm thu sau khi qua `Code Auditor`. |
+| **Mã nguồn & Wiki** | Chỉ đọc | Chỉ đọc | **Ghi (Độc quyền từng file)** | **Chỉ đọc** (Cấm sửa code) | `Lead` khóa quyền ghi rời nhau giữa các `Worker`. |
+| **File Test (`tests/*`)** | Chỉ đọc | Chỉ đọc | **Ghi (Test luồng chuẩn)** | **Ghi & Chạy (Test phá hoại)**| Ưu tiên chạy trên môi trường thật (hỏi User nếu cần). |
 
 - **Luồng Leo thang (Zero Guessing):** Khi gặp spec mơ hồ hoặc xung đột với contract/ADR/test hiện hành, `Subagent` dừng ngay lập tức $\rightarrow$ báo cáo dữ kiện lên `Lead` $\rightarrow$ `Lead` hỏi `User`. Cấm tự ý đoán mò.
 
 ---
 
-## IV. ĐỌC THEO BATCH & CẤM CUỘN MÙ
+## IV. ĐỌC THEO BATCH & QUY TRÌNH TRA CỨU 3 BƯỚC (CẤM CUỘN MÙ)
 
-- **Đọc Batch:** Phát nhiều lệnh `read_file` song song trong 1 turn (Parallel Tool Calls) hoặc gộp qua Shell khi đọc nhiều file độc lập.
-- **Tra cứu 3 bước:** (1) Mở `DOC_MAP.md` chọn đúng file spec/ADR $\rightarrow$ (2) Tra `CODEBASE_MAP.md` lấy `File` + `Tên hàm` + `Nhãn [CORE]/[SHARED]` $\rightarrow$ (3) Chạy `rg` / `ast-grep` lấy số dòng rồi gọi `read_file` đúng 1 lần vào thân hàm. Cấm đọc cả file $> 400$ dòng khi chỉ sửa cục bộ.
-- **Cấm cuộn mù:** Cấm gọi `read_file` trượt cửa sổ liên tiếp (dòng 1–100, 100–200...). Mở cùng 1 file quá 2 turn không qua bước `grep` số dòng là vi phạm kỷ luật.
+- **Đọc Batch:** Phát nhiều lệnh `read_file` song song trong 1 turn (Parallel Tool Calls) khi cần đọc nhiều file độc lập.
+- **Quy trình Tra cứu 3 bước (Áp dụng khi Repo ở trạng thái `Steady`):**
+  1. **Tra `DOC_MAP.md`:** Xác định đúng file spec hoặc `docs/decisions/` liên quan đến task.
+  2. **Tra `CODEBASE_MAP.md`:** Lấy đường dẫn `File` + `Tên hàm/Class` + nhãn `[CORE]`/`[SHARED]` và danh sách callers.
+  3. **Định vị dòng & Đọc trúng đích:** Chạy `rg` / `ast-grep` tìm tên hàm để lấy số dòng, sau đó gọi `read_file` đúng 1 lần vào thân hàm đó. Cấm đọc cả file $> 400$ dòng khi chỉ sửa cục bộ.
+- **Cấm cuộn mù:** Cấm gọi `read_file` trượt cửa sổ liên tiếp (dòng 1–100, 100–200...). Mở cùng 1 file quá 2 turn mà không qua bước `grep` lấy số dòng là vi phạm kỷ luật.
 
 ---
 

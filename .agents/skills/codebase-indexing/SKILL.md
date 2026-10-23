@@ -25,7 +25,11 @@ description: >-
      - Nếu `npx gitnexus` chưa cài hoặc báo lỗi, `Indexer` **dừng ngay lập tức** và báo cáo lên `Lead Agent`.
      - `Lead Agent` bắt buộc dùng `ask_question` trình bày cho User:
        1. **Hướng dẫn cài nhanh `GitNexus`:** Chạy `npm install -g gitnexus` hoặc dùng `npx gitnexus analyze` (yêu cầu Node.js $\ge 18$) để có đồ thị AST & Blast Radius chính xác 100%.
-       2. **Phân tích Quy trình Đọc Tĩnh Dự phòng (Static Fallback):** Nếu User từ chối cài `GitNexus`, Agent sẽ dùng quy trình 3 bước tĩnh: (a) Quét khai báo symbol bằng `ast-grep` / `ctags --output-format=json` / `rg`, (b) Quét câu lệnh `import`/`export`/`require` để dựng bảng phụ thuộc cấp file, (c) Đếm số lần xuất hiện tên hàm bằng `rg "\b<symbol>\b"` để ước lượng nhãn `[SHARED]` ($\ge 3$ nơi gọi). _Nhược điểm cần nêu rõ cho User:_ Không bắt được lời gọi đa hình (polymorphism), alias đổi tên hoặc kế thừa nhiều tầng.
+       2. **Phân tích Quy trình Đọc Tĩnh Dự phòng (Static Fallback):** Nếu User từ chối cài `GitNexus`, Agent sẽ chạy 3 bước tĩnh:
+          - *(a)* Quét khai báo symbol bằng `ast-grep`, `ctags --output-format=json` hoặc `rg`.
+          - *(b)* Quét câu lệnh `import`/`export`/`require` để dựng bảng phụ thuộc cấp file.
+          - *(c)* Đếm số lần xuất hiện tên hàm bằng `rg "\b<symbol>\b"` để ước lượng nhãn `[SHARED]` ($\ge 3$ nơi gọi).
+          - *Nhược điểm cần nêu rõ cho User:* Không bắt được lời gọi đa hình (`polymorphism`), alias đổi tên hoặc kế thừa nhiều tầng.
      - **Chỉ khi User bấm đồng ý cho phép Fallback tĩnh**, `Indexer` mới được thực thi quy trình tĩnh trên.
    - **Giới hạn đọc code:** Chỉ mở `read_file` đọc 30–50 dòng đầu file hoặc docstring khi tên hàm chưa rõ nghĩa.
 3. **Gắn Nhãn Bán Kính Tác Động (`Blast Radius`):**
