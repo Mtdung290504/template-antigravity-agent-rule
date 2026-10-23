@@ -80,7 +80,7 @@ Khi User đặt câu hỏi kỹ thuật, bàn giải pháp, đánh giá công ng
 - **[TASK SLUG]**: `<kebab-case-slug>` (Ví dụ: `auth-jwt-refresh` — cấm dùng mã hash ngẫu nhiên)
 - **[ROLE]**: `<Worker Agent | Indexer Agent | Code Auditor>`
 - **[MODEL]**: `<giá trị lấy từ .agents/MODEL_CONFIG.yaml>`
-- **[WORKSPACE]**: `<branch | inherit>`
+- **[WORKSPACE]**: `<inherit (Mặc định an toàn — giữ nguyên file trên đĩa nếu hết quota) | branch>`
 - **[ACTIVE SKILLS]**: `<Không | codebase-indexing | deep-code-wiki | doc-adr-sync | high-signal-writing>`
 - **[CORE DIRECTIVE]**: <1–2 câu mệnh lệnh rõ ràng nêu mục tiêu cần hoàn thành>
 - **[MANDATORY ANCHORS]**:
@@ -93,7 +93,17 @@ Khi User đặt câu hỏi kỹ thuật, bàn giải pháp, đánh giá công ng
 ### Bước 2: Quản Lý Vòng Đời Ephemeral & Hồ Sơ Lịch Sử Theo Vòng (`Append-by-Round`)
 
 - **Hồ sơ Lịch sử Nối tiếp (`.agents/handoffs/<task-slug>.md`):** Toàn bộ báo cáo của `Worker` và phán quyết của `Code Auditor` qua các vòng (`Round 1`, `Round 2`...) của cùng một task được ghi **nối tiếp (`Append=true`) vào chung 1 file `.agents/handoffs/<task-slug>.md`** để `Lead` và `User` theo dõi trọn vẹn lịch sử bắt lỗi $\rightarrow$ sửa lỗi.
-- **Giải phóng Subagent ngay sau mỗi lượt:** Sau khi `Indexer`, `Worker` hoặc `Code Auditor` ghi xong phần của mình vào `.agents/handoffs/<task-slug>.md`, `Lead` gọi `read_file` đọc kết quả rồi **ngay lập tức gọi `manage_subagents(Action='kill')`** để giải phóng subagent đó (không áp dụng lệnh kill này cho `Debate Auditor`).
+- **Giải phóng Subagent ngay khi hoàn tất:** Sau khi `Indexer`, `Worker` hoặc `Code Auditor` ghi xong phần của mình vào `.agents/handoffs/<task-slug>.md`, `Lead` gọi `read_file` đọc kết quả rồi **ngay lập tức gọi `manage_subagents(Action='kill')`** để giải phóng subagent đó (không áp dụng lệnh kill này cho `Debate Auditor`).
+
+### Bước 3: Giao Thức Cứu Hộ Khi Subagent Hết Quota Giữa Chừng (`Quota Crash Recovery`)
+
+Khi đang gọi `invoke_subagent` hoặc `send_message` mà Subagent bị dừng đột ngột do hết quota (`RESOURCE_EXHAUSTED` / `Quota Reached`), `Lead` thực hiện tuần tự:
+1. **Cấm gọi `kill` ngay lập tức:** Giữ nguyên trạng thái của subagent đó (vì lệnh `kill` sẽ xóa `conversationId` làm mất khả năng `continue`, và nếu đang dùng `Workspace='branch'` thì `kill` sẽ xóa luôn nhánh code đang viết dở).
+2. **Bật `ask_question` hỏi User cứu hộ:** Thông báo rõ: *"Agent `<Role>` (đang chạy tier `<Model vừa tèo>`) vừa hết quota nên 'ngủm' giữa chừng. Bạn muốn xử lý thế nào?"* kèm các lựa chọn:
+   - **Lựa chọn 1 — Đổi sang tier khác (`flash` hoặc `pro`) để chạy tiếp ngay:**
+     - Nếu là `Worker` đang code dở: Kiểm tra `git status` / `git diff` để giữ nguyên các file đã sửa trên đĩa (nếu lỡ dùng `branch` thì phải đọc transcript/cop file ra trước khi `kill`), sau đó `kill` con cũ, cập nhật model mới vào `.agents/MODEL_CONFIG.yaml` và spawn `Worker` mới làm tiếp đúng phần còn lại.
+     - Nếu là `Debate Auditor`: `kill` con cũ, cập nhật model mới vào `.agents/MODEL_CONFIG.yaml` và spawn `Debate Auditor` mới nạp `.agents/SESSION_STATE.md`.
+   - **Lựa chọn 2 — Giữ nguyên chờ hồi Quota (hoặc bật AI Credits) rồi `Continue`:** Không `kill` subagent; khi User báo đã có lại quota, dùng `send_message` nhắn vào đúng `conversationId` cũ để đánh thức (`revive`) nó chạy tiếp từ chỗ bị ngắt.
 
 ---
 

@@ -7,7 +7,7 @@
 
 ## 1. Kỷ Luật Phạm Vi & Kích Hoạt Skill Tình Huống
 
-- **Đọc chung, Ghi độc quyền (`Shared Read, Exclusive Write`):** Được phép đọc (`read_file`) mọi file tài liệu, Map, ADR và các file code/caller liên đới để hiểu ngữ cảnh; nhưng **chỉ được phép ghi/sửa (`write_file`/`edit_file`) đúng các file nằm trong mục `Độc quyền ghi (Exclusive Write)`** của `Init Manifest`.
+- **Đọc chung, Ghi độc quyền (`Shared Read, Exclusive Write`):** Được phép đọc (`read_file`) mọi file tài liệu, Map, ADR và các file code/caller liên đới để hiểu ngữ cảnh; nhưng **chỉ được phép ghi/sửa (`write_file`/`edit_file`) đúng các file nằm trong mục `Độc quyền ghi (Exclusive Write)`** của `Init Manifest`. Mặc định ưu tiên chạy trên `Workspace='inherit'` để nếu hết quota giữa chừng thì phần code đã sửa vẫn còn nguyên trên đĩa cứng cho Worker kế nhiệm làm tiếp.
 - **Tuyên bố Khả kiểm chứng (Evidence-Backed Claims):** Kiến thức nền hiển nhiên được dùng trí nhớ; mọi nhận định về nguyên nhân lỗi (Root Cause), hành vi hàm/thư viện hoặc cơ chế viết trong Handoff/Wiki bắt buộc kèm bằng chứng xác minh (`[file:line](file:///...)`, `stdout` thực nghiệm hoặc link doc gốc).
 - **Chống Gian lận Thực thi & Ưu tiên Môi trường Thật (`Anti-Facade & Real Env First`):**
   - **Cấm ngụy tạo (`No Facade / No Test-Gaming`):** Cấm viết hàm vỏ rỗng (`stub/facade`), cấm đọc bài test để hardcode kết quả trả về, cấm sửa test cũ để ép pass, và cấm viết bài test vô nghĩa (mock luôn hàm đang cần test).
