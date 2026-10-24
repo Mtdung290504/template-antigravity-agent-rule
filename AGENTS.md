@@ -60,7 +60,7 @@
 | **`DOC_MAP.md`** | Chỉ đọc | Tạo & Sửa | Chỉ đọc | Kiểm tra đồng bộ | `Lead` nghiệm thu $\rightarrow$ **User duyệt**. |
 | **`CODEBASE_MAP.md`** | Chỉ đọc | Tạo & Sửa | Chỉ đọc (Trừ `Greenfield`) | Kiểm tra ranh giới | `Lead` nghiệm thu $\rightarrow$ **User duyệt**. |
 | **`.agents/SESSION_STATE.md`**| **Chỉ đọc** (Đồng bộ với Lead) | Cấm đọc/ghi | Cấm đọc/ghi | Cấm đọc/ghi | **Chỉ `Lead` ghi** để khôi phục sau `/compact`. |
-| **`.agents/DEBATE_LOG.md`** | **Ghi đè (`Overwrite`)** | Không đọc/ghi | Không đọc/ghi | Không đọc/ghi | User mở đọc phản biện trực tiếp; `Lead` gắn link. |
+| **`.agents/DEBATE_LOG.md`** | **Đồng bộ qua Hook** (Cấm gọi `write_file`) | Không đọc/ghi | Không đọc/ghi | Không đọc/ghi | User mở đọc phản biện trực tiếp; `Lead` gắn link. |
 | **`.agents/handoffs/*.md`** | Không đọc/ghi | Ghi báo cáo | Ghi báo cáo | Ghi phán quyết | `Lead` đọc nghiệm thu và `kill` subagent. |
 | **Mã nguồn & Wiki** | Chỉ đọc | Chỉ đọc | **Ghi (Độc quyền từng file)** | **Chỉ đọc** (Cấm sửa code) | `Lead` khóa quyền ghi rời nhau giữa các `Worker`. |
 | **File Test (`tests/*`)** | Chỉ đọc | Chỉ đọc | **Ghi (Test luồng chuẩn)** | **Ghi & Chạy (Test phá hoại)**| Ưu tiên chạy trên môi trường thật (hỏi User nếu cần). |

@@ -45,7 +45,7 @@ Ngay tại Turn 1 (trước khi gọi `Debate Auditor` hay bất kỳ subagent n
 
 ## 3. Cơ Chế Phản Biện Song Hành Với `Debate Auditor` (Không Cần Xin Phép `Init Manifest`)
 
-Khi User đặt câu hỏi kỹ thuật, bàn giải pháp, đánh giá công nghệ, hoặc yêu cầu thiết kế/lập `Plan` (trừ các lệnh hành chính tầm thường như đọc/xóa 1 file cụ thể), `Lead Agent` **bắt buộc thực hiện 4 bước sau trước khi in câu trả lời cho User**:
+- **Ngưỡng Kích Hoạt Bắt Buộc (`Single Invariant Trigger Threshold`):** `Lead Agent` **bắt buộc gọi `Debate Auditor` trước khi in câu trả lời cho User** khi và chỉ khi dự thảo phản hồi của `Lead` chứa một trong các nội dung: (1) Đề xuất giải pháp kỹ thuật hoặc lựa chọn kiến trúc/công nghệ mới, (2) Phán quyết/đánh giá về tính đúng đắn, bảo mật hoặc giới hạn kỹ thuật, (3) Kế hoạch thực thi nhiều bước (`Plan`) hoặc giao việc cho Subagent, hoặc (4) Đề xuất thay đổi ADR / sửa Rule hệ thống. **Cấm in đề xuất kỹ thuật ra màn hình trước khi nhận phản biện từ `Debate Auditor`.** Mọi phản hồi thuần tra cứu dữ kiện, làm rõ yêu cầu hoặc giải thích hiển nhiên nằm ngoài ngưỡng tác động này thì `Lead` tự chủ trả lời trực tiếp.
 
 1. **Bước 1 — Khởi tạo hoặc Gọi tiếp `Debate Auditor` (Tự động sau khi đã có Model Config):**
    - Nếu trong phiên hiện tại chưa có `Debate Auditor` đang sống: Gọi `invoke_subagent` khởi tạo `Debate Auditor` (lấy model từ `DEBATE_AUDITOR_MODEL` trong `.agents/MODEL_CONFIG.yaml`), yêu cầu nó nạp `.agents/rules/debate-auditor.md` và `.agents/SESSION_STATE.md`. Ghi nhớ `conversationId` của nó.
@@ -54,13 +54,13 @@ Khi User đặt câu hỏi kỹ thuật, bàn giải pháp, đánh giá công ng
    Vì chỉ đọc `docs/decisions/` là chưa đủ để hiểu mạch thảo luận đang diễn ra, mỗi lần gọi `Debate Auditor`, `Lead` **bắt buộc truyền đầy đủ 3 mục sau**:
    ```markdown
    - **[1. USER PROMPT NGUYÊN VĂN LƯỢT NÀY]**: <Chép nguyên văn 100% câu hỏi/yêu cầu vừa gõ của User — cấm cắt xén làm lệch ý User>
-   - **[2. TÓM TẮT MẠCH HỘI THOẠI & RÀNG BUỘC TRƯỚC ĐÓ]**: <Tóm tắt các trao đổi, mong muốn, điều kiện của User ở các lượt trước chưa đưa vào ADR; nhắc đọc lại .agents/SESSION_STATE.md nếu vừa cập nhật>
+   - **[2. TÓM TẮT MẠCH HỘI THOẠI & RÀNG BUỘC TRƯỚC ĐÓ]**: <Tóm tắt các trao đổi, quyết định hoặc ràng buộc mới từ lượt trước để Debate Auditor nắm mạch ngay mà không cần đọc lại SESSION_STATE.md>
    - **[3. DỰ THẢO CÂU TRẢ LỜI / PHƯƠNG ÁN CỦA LEAD]**: <Toàn bộ lập luận và giải pháp mà Lead định trả lời User để Debate Auditor mổ xẻ>
    ```
-3. **Bước 3 — Chờ `Debate Auditor` Ghi đè `.agents/DEBATE_LOG.md`:**
-   - `Debate Auditor` sẽ ghi đè (`Overwrite=true`) toàn bộ lập luận phản biện chi tiết của nó vào file `.agents/DEBATE_LOG.md` và trả về tối đa 3 gạch đầu dòng ngắn cho `Lead`.
-4. **Bước 4 — Hiệu chỉnh & Trả lời User (Cấm Copy-Paste Tốn Output Token):**
-   - `Lead` tiếp thu các điểm phản biện đúng đắn để sửa lại câu trả lời của mình.
+3. **Bước 3 — Nhận Trực Tiếp Toàn Bộ Biên Bản Phản Biện Chi Tiết:**
+   - `Debate Auditor` gửi trực tiếp toàn bộ biên bản phản biện chi tiết qua `send_message` về cho `Lead` (đồng thời Hook [`.agents/hooks.json`](../hooks.json) tự động bắt nội dung này và ghi đè vào `.agents/DEBATE_LOG.md`).
+4. **Bước 4 — Đánh Giá Độc Lập, Hiệu Chỉnh & Trả Lời User (Cấm Copy-Paste Tốn Output Token):**
+   - `Lead` đọc trực tiếp toàn bộ lập luận chi tiết của `Debate Auditor`, tiếp thu các điểm bẻ gãy xác đáng và giữ quyền bác bỏ các điểm sai hoặc vi phạm YAGNI.
    - Trên khung chat với User: **Tuyệt đối không copy-paste lại nội dung dài của `Debate Auditor`**. Chỉ ghi 1–2 dòng tóm tắt điểm vừa tranh biện và gắn link **[`.agents/DEBATE_LOG.md`](../DEBATE_LOG.md)** để User bấm vào đọc trực tiếp góc nhìn của `Debate Auditor`.
 
 ---
@@ -99,7 +99,7 @@ Khi User đặt câu hỏi kỹ thuật, bàn giải pháp, đánh giá công ng
 
 ## 5. Đồng Bộ Hóa `/compact` Cho Cả `Lead` Lẫn `Debate Auditor` (`.agents/SESSION_STATE.md`)
 
-- **Khi nào cập nhật:** Ghi trạng thái tác nghiệp vào `.agents/SESSION_STATE.md` (chỉ sửa phần thay đổi) mỗi khi: bắt đầu task (`ĐANG`), xong task (`XONG`), gặp blocker (`CHẶN`), chốt quyết định thảo luận mới, hoặc khi User vừa sửa một lỗi hành vi của AI.
+- **Khi nào cập nhật (Ưu tiên Tool Call):** Bắt buộc gọi `edit_file`/`write_file` cập nhật `.agents/SESSION_STATE.md` (chỉ sửa phần thay đổi) ngay trong cùng lượt gọi công cụ (trước hoặc song song khi xuất câu trả lời) mỗi khi: bắt đầu task (`ĐANG`), xong task (`XONG`), gặp blocker (`CHẶN`), chốt quyết định thảo luận mới, hoặc khi User vừa sửa một lỗi hành vi của AI.
 - **Khi User chạy `/compact` (Synchronized Reset):** Lệnh `/compact` chỉ nén cửa sổ chat của `Lead`, không tự nén các subagent đang chạy ngầm. Do đó, ngay ở turn đầu tiên sau `/compact`:
   1. `Lead` gọi `read_file` đọc `.agents/SESSION_STATE.md` để khôi phục 100% trí nhớ.
   2. **Nếu đang có `Debate Auditor` cũ từ trước lúc `/compact`:** Gọi `manage_subagents(Action='kill')` hủy bỏ `Debate Auditor` cũ (đang bị phình context), rồi spawn `Debate Auditor` mới đọc `.agents/SESSION_STATE.md` để cả hai cùng có trạng thái sạch 100%.

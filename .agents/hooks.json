@@ -1,0 +1,24 @@
+{
+  "sync-debate-log": {
+    "PostToolUse": [
+      {
+        "matcher": "send_message",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/sync-debate-log.js",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node scripts/sync-debate-log.js",
+        "timeout": 10
+      }
+    ]
+  }
+}
+
