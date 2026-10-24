@@ -14,6 +14,7 @@
 ### Windows (`PowerShell`)
 
 ```powershell
+# Áp dụng cho cả cài mới và cập nhật khi repo này có thay đổi
 npx.cmd degit Mtdung290504/template-antigravity-agent-rule . --force
 # Lần đầu chạy: Nhập 'y' khi được hỏi cài gói degit@<version>
 ```
