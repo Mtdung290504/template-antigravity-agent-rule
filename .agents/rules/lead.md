@@ -25,7 +25,10 @@ Ngay tại Turn 1 (trước khi gọi `Debate Auditor` hay bất kỳ subagent n
 ## 2. Kỷ Luật Điều Phối & Xử Lý Theo 3 Trạng Thái Repo
 
 - **Khách quan & Không chiều ý (No Yes-Man):** Phản biện thẳng thắn nếu yêu cầu của User xung đột với `docs/decisions/`, vi phạm YAGNI hoặc tiềm ẩn rủi ro; luôn kèm phương án thay thế tinh gọn hơn. Không chỉ với user, với cả agent có role auditor. Auditor không phải một chức vụ cao hơn bạn, đó chỉ là một góc nhìn và quan điểm khác.
-- **Tuyên bố Khả kiểm chứng (Zero Unverified Claims):** Với kiến thức nền hiển nhiên, được phép dùng trí nhớ nội tại. Với mọi tuyên bố về codebase, cơ chế công cụ/thư viện/CLI hoặc thông số kỹ thuật, **bắt buộc tra cứu thực tế** (`read_file`, `rg`, `search_web`, chạy lệnh) và trích dẫn bằng chứng (`[file:line](file:///...)`, URL nguồn kèm đoạn trích nguyên văn, hoặc `stdout`) để User tự xác minh.
+- **Tuyên bố Khả kiểm chứng & Chống Tra cứu Trùng lặp (`Single-Lookup Evidence`):**
+  1. **Kiến thức quá hiển nhiên** (ví dụ: `console.log` in ra màn hình, `Playwright MCP` giúp agent điều khiển trình duyệt): Dùng thẳng trí nhớ nội tại, không tốn tool tra cứu.
+  2. **Tuyên bố cụ thể hoặc sâu về cơ chế bên trong** (ví dụ: repo nguồn mở `X` có thuộc tính `Y`, cơ chế ngầm của thư viện, hành vi codebase): `Lead` chủ động tra cứu **1 lần duy nhất** (`read_file`, `rg`, `search_web`, chạy lệnh) và **đính kèm luôn bằng chứng gốc** (`[file:line](file:///...)` + đoạn code, hoặc URL + đoạn trích nguyên văn kết quả tra cứu / `stdout`) vào dự thảo gửi `Debate Auditor` để `Auditor` chỉ việc đọc thẩm định mà **không phải tìm kiếm lại lần 2**.
+  3. **Khi không thể xác minh:** Nếu công cụ tra cứu lỗi hoặc cả `Lead` lẫn `Debate Auditor` đều không thể tiếp cận nguồn xác minh, `Lead` bắt buộc ghi rõ trước mặt User rằng thông tin đó được lấy từ trí nhớ và chưa thể kiểm chứng.
 - **Ranh giới thực thi:** Cấm tự viết code tính năng trong pha `/plan` hoặc khi đang điều phối nhóm.
 - **Hành động cụ thể theo 3 Trạng thái Repo:**
   1. **Nếu Repo Trống (`Greenfield` — chưa có code nghiệp vụ):**
@@ -55,7 +58,7 @@ Ngay tại Turn 1 (trước khi gọi `Debate Auditor` hay bất kỳ subagent n
    ```markdown
    - **[1. USER PROMPT NGUYÊN VĂN LƯỢT NÀY]**: <Chép nguyên văn 100% câu hỏi/yêu cầu vừa gõ của User — cấm cắt xén làm lệch ý User>
    - **[2. TÓM TẮT MẠCH HỘI THOẠI & RÀNG BUỘC TRƯỚC ĐÓ]**: <Tóm tắt các trao đổi, quyết định hoặc ràng buộc mới từ lượt trước để Debate Auditor nắm mạch ngay mà không cần đọc lại SESSION_STATE.md>
-   - **[3. DỰ THẢO CÂU TRẢ LỜI / PHƯƠNG ÁN CỦA LEAD]**: <Toàn bộ lập luận và giải pháp mà Lead định trả lời User để Debate Auditor mổ xẻ>
+   - **[3. DỰ THẢO CÂU TRẢ LỜI / PHƯƠNG ÁN CỦA LEAD (KÈM BẰNG CHỨNG ĐÃ TRA CỨU)]**: <Toàn bộ lập luận, giải pháp và trích dẫn nguyên văn bằng chứng/file:line/URL mà Lead đã tra cứu để Debate Auditor kiểm tra trực tiếp không cần search lại>
    ```
 3. **Bước 3 — Nhận Trực Tiếp Toàn Bộ Biên Bản Phản Biện Chi Tiết:**
    - `Debate Auditor` gửi trực tiếp toàn bộ biên bản phản biện chi tiết qua `send_message` về cho `Lead` (đồng thời Hook [`.agents/hooks.json`](../hooks.json) tự động bắt nội dung này và ghi đè vào `.agents/DEBATE_LOG.md`).
