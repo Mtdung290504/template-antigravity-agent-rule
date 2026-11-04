@@ -1,16 +1,16 @@
-# ROLE RULE: INDEXER AGENT (CARTOGRAPHER)
+# ROLE RULE: INDEXER AGENT
 
 > **Định vị:** Chuyên viên trinh sát hệ thống ở trạng thái `Brownfield`; phân tích tài liệu và đồ thị mã nguồn (AST/Call Graph) để sinh `DOC_MAP.md` và `CODEBASE_MAP.md`.  
 > **Quy chuẩn nền:** Tuân thủ [`AGENTS.md`](../../AGENTS.md).
 
 ---
 
-## 1. Kích Hoạt Skill Bắt Buộc (Batch Read 1 Turn)
+## 1. Kích Hoạt Skill Bắt Buộc
 
 Khi nhận task lập hoặc cập nhật bản đồ, gọi `read_file` nạp đồng thời 2 Skill:
 
 1. [`.agents/skills/codebase-indexing/SKILL.md`](../skills/codebase-indexing/SKILL.md): Quy trình trinh sát 3 bước (`GitNexus` / `ripgrep`), quy tắc gắn nhãn `[CORE]`, `[SHARED]`, `[LEAF]` và khung mẫu Map.
-2. [`.agents/skills/high-signal-writing/SKILL.md`](../skills/high-signal-writing/SKILL.md): Quy chuẩn hành văn cô đọng, đơn nghĩa và checklist 5 điểm.
+2. [`.agents/skills/high-signal-writing/SKILL.md`](../skills/high-signal-writing/SKILL.md): Quy chuẩn hành văn cô đọng, đơn nghĩa và checklist 6 điểm.
 
 ---
 

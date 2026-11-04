@@ -1,7 +1,7 @@
 ---
 name: deep-code-wiki
 description: >-
-  Quy trình Map-Reduce 2 giai đoạn để duyệt sâu mã nguồn (travel code), giải phẫu thuật toán
+  Quy trình Map-Reduce 3 bước để duyệt sâu mã nguồn (travel code), giải phẫu thuật toán
   và biên soạn tài liệu kiến trúc chuyên sâu (DESIGN.md / Code Wiki / Khảo sát Repo).
   Kích hoạt khi người dùng yêu cầu viết Wiki, viết tài liệu giải thích sâu cơ chế code
   hoặc khảo sát chi tiết một repository/module.
@@ -9,7 +9,7 @@ description: >-
 
 # SKILL: DUYỆT SÂU MÃ NGUỒN & BIÊN SOẠN CODE WIKI (MAP-REDUCE PIPELINE)
 
-> **Điều kiện kích hoạt:** Khi User yêu cầu đọc hiểu sâu mã nguồn (`travel code`) để viết Code Wiki, `DESIGN.md` hoặc giải phẫu kiến trúc repo. Nạp kèm skill `high-signal-writing`.  
+> Nạp kèm skill `high-signal-writing`.  
 > **Nguyên tắc sống còn:** Cấm giao 1 Agent đọc lèo > 10 files trong 1 phiên để viết Wiki (sẽ gây tràn Context Window dẫn đến tóm tắt hời hợt hoặc bịa đặt ở các file cuối). Bắt buộc chia nhỏ theo quy trình Map-Reduce 3 bước dưới đây.
 
 ---
@@ -18,14 +18,14 @@ description: >-
 
 ### Bước 1: Phân Cụm Bản Đồ (`MAP` — Giao `Indexer Agent`)
 
-- Nếu repo chưa có `CODEBASE_MAP.md`: Chạy skill `codebase-indexing` quét AST/GitNexus để gom các file có liên kết chặt thành từng **Cụm chức năng (`Subsystems`)** và gắn nhãn `[CORE]`, `[SHARED]`.
+- Nếu repo chưa có `CODEBASE_MAP.md`: Chạy skill `codebase-indexing` quét AST/GitNexus để gom các file có liên kết chặt thành từng **Cụm chức năng** và gắn nhãn `[CORE]`, `[SHARED]`.
 
 ### Bước 2: Giải Phẫu Sâu Từng Cụm (`REDUCE` — Giao `Worker Agent`)
 
 - `Lead Agent` chia việc viết Wiki thành các task độc lập theo từng cụm. **Giới hạn cứng: Tối đa 3–6 files mã nguồn / 1 task** (ví dụ: `wiki-core-runtime`, `wiki-dom-parser`).
-- Trong phạm vi cụm được giao, `Worker Agent` được mở khóa **Chế độ Đọc Sâu (`Deep Traversal`)** thực hiện 3 việc:
+- Trong phạm vi cụm được giao, `Worker Agent` được mở khóa **Chế độ Đọc Sâu** thực hiện 3 việc:
   1. **Đọc 100% thân hàm** của các hàm `[CORE]` và `[SHARED]` thuộc cụm đó.
-  2. **Lần vết luồng dữ liệu end-to-end:** Đi từ `Entrypoint` $\rightarrow$ qua các bước biến đổi dữ liệu $\rightarrow$ các nhánh điều kiện chắn lỗi (`Guard clauses`) $\rightarrow$ `Output / Side-effects`.
+  2. **Lần vết luồng dữ liệu end-to-end:** Đi từ `Entrypoint` $\rightarrow$ qua các bước biến đổi dữ liệu $\rightarrow$ các nhánh điều kiện chắn lỗi $\rightarrow$ `Output / Side-effects`.
   3. **Bóc tách các quyết định ngầm trong code:** Ghi nhận các đoạn xử lý trường hợp biên đặc biệt, các hằng số giới hạn cứng (`timeouts`, `buffer limits`, `retry counts`) và cơ chế khóa đồng thời (`locks`, `queues`).
 
 ### Bước 3: Kiểm Định Thực Chứng (`VERIFY` — Giao `Code Auditor`)
@@ -57,13 +57,13 @@ description: >-
 - **Cơ chế kỹ thuật:** <Giải thích trực diện từng bước hoạt động, công thức tính toán hoặc điều kiện rẽ nhánh>.
 - **Thông số cứng & Độ phức tạp:** <Timeout, giới hạn kích thước tối đa, độ phức tạp thuật toán O(...)>.
 
-## 3. Xử Lý Biên & Phòng Vệ (Edge Cases & Guards)
+## 3. Xử Lý Biên & Phòng Vệ
 
-| Tình huống biên / Lỗi              | Hàm xử lý (`Guard`) | Hành vi hệ thống (Fail-fast / Fallback / Retry) |
+| Tình huống biên / Lỗi              | Hàm xử lý           | Hành vi hệ thống (Fail-fast / Fallback / Retry) |
 | :--------------------------------- | :------------------ | :---------------------------------------------- |
 | `<Input rỗng / Quá tải / Timeout>` | `validateInput()`   | `<Trả về mã lỗi X / Hủy tiến trình>`            |
 
-## 4. Giới Hạn Hiện Tại (Known Limitations)
+## 4. Giới Hạn Hiện Tại
 
 - <Liệt kê trung thực những gì code hiện tại CHƯA xử lý được hoặc đang giả định ngầm>.
 ```

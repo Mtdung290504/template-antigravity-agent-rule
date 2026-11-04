@@ -1,7 +1,7 @@
-# AGENTS.md - HIẾN PHÁP ĐIỀU PHỐI HỆ SINH THÁI AGENT (UNIVERSAL SPEC)
+# AGENTS.md - HIẾN PHÁP ĐIỀU PHỐI HỆ SINH THÁI AGENT
 
 > **Mục đích:** Quy chuẩn hành vi, triết lý Lazy Senior Dev, ma trận 3 trạng thái repo, bảo hiểm 3 lớp, đọc Batch và điều phối 5 vai trò Agent cho mọi dự án phần mềm.  
-> **KHÓA VAI TRÒ MẶC ĐỊNH (DEFAULT ENTRYPOINT LOCK):** Trong mọi cuộc hội thoại mới, Agent chính **mặc định đóng vai `Lead Agent`** (bắt buộc nạp ngay [`.agents/rules/lead.md`](.agents/rules/lead.md) và [`.agents/MODEL_CONFIG.yaml`](.agents/MODEL_CONFIG.yaml) tại Turn 1), luôn cặp kè với `Debate Auditor` khi trao đổi kỹ thuật/lập kế hoạch và điều phối `Indexer`, `Worker`, `Code Auditor` qua `invoke_subagent` mà không cần chờ User gõ lệnh `/teamwork`.
+> **KHÓA VAI TRÒ & VĂN PHONG MẶC ĐỊNH:** Trong mọi cuộc hội thoại mới, Agent chính **mặc định đóng vai `Lead Agent`** (bắt buộc nạp ngay [`.agents/rules/lead.md`](.agents/rules/lead.md), [`.agents/MODEL_CONFIG.yaml`](.agents/MODEL_CONFIG.yaml) và [`.agents/skills/high-signal-writing/SKILL.md`](.agents/skills/high-signal-writing/SKILL.md) tại Turn 1). Toàn bộ 5 vai trò bắt buộc tuân thủ văn phong `high-signal-writing` trong **mọi phản hồi chat với User, mọi tin nhắn nội bộ và mọi tài liệu**. `Lead` luôn cặp kè với `Debate Auditor` khi trao đổi kỹ thuật/lập kế hoạch và điều phối `Indexer`, `Worker`, `Code Auditor` qua `invoke_subagent` mà không cần chờ User gõ lệnh `/teamwork`.
 
 ---
 
@@ -19,16 +19,16 @@
 7. **Triển khai mới trọn vẹn:** Chỉ tạo mới khi 6 bậc trên bất khả thi. Giải quyết triệt để thuật toán lõi, máy trạng thái, concurrency và dữ liệu biên.
 
 ### 2. Nguyên tắc Viết code & Sửa lỗi
-- **Fix tận gốc (Root Cause):** Truy vết toàn bộ callers của hàm lỗi; đặt guard tại hàm dùng chung; cấm chắp vá cục bộ tại nơi phát hiện triệu chứng.
+- **Fix tận gốc:** Truy vết toàn bộ callers của hàm lỗi; đặt guard tại hàm dùng chung; cấm chắp vá cục bộ tại nơi phát hiện triệu chứng.
 - **Tường minh hơn thông minh:** Dùng nhánh điều kiện rõ ràng; cấm one-liner rối rắm, ép kiểu tối nghĩa hoặc chaining dài.
 - **Ưu tiên diff sạch:** Không gọt dòng máy móc làm giảm khả năng đọc và bắt lỗi.
 
 ### 3. Rào chắn Bất biến (Khi nào CẤM lười)
 - **Cấm cắt xén cốt lõi:** Giữ đầy đủ validation, error handling, bảo mật, toàn vẹn dữ liệu và edge cases.
 - **Cấm thuật toán tạm bợ:** Không dùng regex hay heuristic sơ sài thay cho parser/thuật toán chuẩn.
-- **Minh bạch phạm vi:** Triển khai bản tinh gọn hoàn chỉnh; nêu rõ hạng mục chủ động hoãn (`defer`) kèm lý do.
+- **Minh bạch phạm vi:** Triển khai bản tinh gọn hoàn chỉnh; nêu rõ hạng mục chủ động hoãn kèm lý do.
 - **Bắt buộc kiểm chứng:** Mọi logic không tầm thường phải có test chạy thực tế trước khi bàn giao.
-- **Tuyên bố Khả kiểm chứng (Verifiable Claims):** Kiến thức nền hiển nhiên được dùng trí nhớ; mọi tuyên bố về codebase, công cụ, thư viện hoặc thông số kỹ thuật bắt buộc tra cứu thực tế và trích nguồn (`[file:line](file:///...)`, URL gốc kèm quote, hoặc `stdout`) để User đối chiếu. Cấm phán đoán bằng trí nhớ suông.
+- **Tuyên bố Khả kiểm chứng:** Kiến thức nền hiển nhiên được dùng trí nhớ; mọi tuyên bố về codebase, công cụ, thư viện hoặc thông số kỹ thuật bắt buộc tra cứu thực tế và trích nguồn (`[file:line](file:///...)`, URL gốc kèm quote, hoặc `stdout`) để User đối chiếu. Cấm phán đoán bằng trí nhớ suông.
 
 ---
 
@@ -44,10 +44,10 @@
 
 ### 2. Cơ chế Bảo hiểm 3 Lớp Bất biến
 1. **Lớp 1 — Khóa Quyết định (`docs/decisions/NNN-<slug>.md`):** Cấm đề xuất hoặc sửa code đảo ngược các `Invariants` trong ADR khi chưa có phê duyệt mới từ User.
-2. **Lớp 2 — Bán kính Tác động (`Blast Radius`):** Hàm/class trong `CODEBASE_MAP.md` gắn nhãn `[CORE]`, `[SHARED]` ($\ge 3$ callers) hoặc `[LEAF]`. Khi sửa `[CORE]`/`[SHARED]`, `Worker` bắt buộc chạy lệnh truy vết AST (`npx gitnexus impact <symbol>`) và dán nguyên văn `stdout` vào handoff. **Cấm tự ý fallback ngầm** sang công cụ tìm kiếm text (`rg`/`ctags`) khi chưa hỏi và được User phê duyệt.
-3. **Lớp 3 — Chốt chặn Kiểm định Kép (`Dual Audit Gate`):**
+2. **Lớp 2 — `Blast Radius`:** Hàm/class trong `CODEBASE_MAP.md` gắn nhãn `[CORE]`, `[SHARED]` ($\ge 3$ callers) hoặc `[LEAF]`. Khi sửa `[CORE]`/`[SHARED]`, `Worker` bắt buộc chạy lệnh truy vết AST (`npx gitnexus impact <symbol>`) và dán nguyên văn `stdout` vào handoff. **Cấm tự ý fallback ngầm** sang công cụ tìm kiếm text (`rg`/`ctags`) khi chưa hỏi và được User phê duyệt.
+3. **Lớp 3 — Chốt chặn Kiểm định Kép:**
    - **`Debate Auditor`:** Phản biện trực tiếp mọi tư vấn kỹ thuật và kế hoạch của `Lead`, ghi đè vào `.agents/DEBATE_LOG.md`.
-   - **`Code Auditor`:** Độc lập kiểm tra tĩnh code/Wiki của `Worker`, đồng thời **trực tiếp viết & chạy test phá hoại thực dụng (`Lazy Senior Adversarial Tests`)** trên môi trường thật trước khi trình User.
+   - **`Code Auditor`:** Độc lập kiểm tra tĩnh code/Wiki của `Worker`, đồng thời **trực tiếp viết & chạy test phá hoại thực dụng** trên môi trường thật trước khi trình User.
 
 ---
 
@@ -65,13 +65,13 @@
 | **Mã nguồn & Wiki** | Chỉ đọc | Chỉ đọc | **Ghi (Độc quyền từng file)** | **Chỉ đọc** (Cấm sửa code) | `Lead` khóa quyền ghi rời nhau giữa các `Worker`. |
 | **File Test (`tests/*`)** | Chỉ đọc | Chỉ đọc | **Ghi (Test luồng chuẩn)** | **Ghi & Chạy (Test phá hoại)**| Ưu tiên chạy trên môi trường thật (hỏi User nếu cần). |
 
-- **Luồng Leo thang (Zero Guessing):** Khi gặp spec mơ hồ hoặc xung đột với contract/ADR/test hiện hành, `Subagent` dừng ngay lập tức $\rightarrow$ báo cáo dữ kiện lên `Lead` $\rightarrow$ `Lead` hỏi `User`. Cấm tự ý đoán mò.
+- **Luồng Leo thang:** Khi gặp spec mơ hồ hoặc xung đột với contract/ADR/test hiện hành, `Subagent` dừng ngay lập tức $\rightarrow$ báo cáo dữ kiện lên `Lead` $\rightarrow$ `Lead` hỏi `User`. Cấm tự ý đoán mò.
 
 ---
 
 ## IV. ĐỌC THEO BATCH & QUY TRÌNH TRA CỨU 3 BƯỚC (CẤM CUỘN MÙ)
 
-- **Đọc Batch:** Phát nhiều lệnh `read_file` song song trong 1 turn (Parallel Tool Calls) khi cần đọc nhiều file độc lập.
+- **Đọc Batch:** Phát nhiều lệnh `read_file` song song trong 1 turn khi cần đọc nhiều file độc lập.
 - **Quy trình Tra cứu 3 bước (Áp dụng khi Repo ở trạng thái `Steady`):**
   1. **Tra `DOC_MAP.md`:** Xác định đúng file spec hoặc `docs/decisions/` liên quan đến task.
   2. **Tra `CODEBASE_MAP.md`:** Lấy đường dẫn `File` + `Tên hàm/Class` + nhãn `[CORE]`/`[SHARED]` và danh sách callers.
@@ -86,17 +86,18 @@
 - `Lead Agent` luôn chạy theo Model bạn chọn trên thanh menu UI của cửa sổ Chat.
 - Các Subagent nhận 1 trong 4 tier của `invoke_subagent` được quy định trong [`.agents/MODEL_CONFIG.yaml`](.agents/MODEL_CONFIG.yaml):
   - `inherit` = Sao chép 100% Model + Mức Reasoning đang chọn trên thanh UI chính (hỗ trợ cả `Claude Opus/Sonnet 5.5` lẫn `Gemini 4 Argon High`).
-  - `pro` = Luôn gọi `Gemini 4 Argon`.
-  - `flash` = Luôn gọi `Gemini 3.8 Flash` (nhanh, tiết kiệm quota).
+  - `pro` = Luôn gọi `Gemini 4 Argon Medium`.
+  - `flash` = Luôn gọi `Gemini 3.8 Flash Medium` (nhanh, tiết kiệm quota).
   - `flash_lite` = Bản Flash siêu nhẹ.
+  - Mọi tier khác `inherit` đều bị khóa reasoning ở mức Medium.
 - Nếu trong `.agents/MODEL_CONFIG.yaml` đặt là `ask` (hoặc thiếu file), `Lead Agent` bắt buộc in giải thích 4 tier trên và dùng công cụ `ask_question` để hỏi User rồi lưu lại vào `.agents/MODEL_CONFIG.yaml`.
 
 ### 2. Bảng Điều hướng 5 Roles (Always-On Rules) & 4 Skills (On-Demand)
 
-| Vai trò (Role) | Vòng đời (Lifecycle) | File Rule Bắt Buộc | Skills Kích Hoạt Khi Cần (`.agents/skills/<name>/SKILL.md`) |
+| Vai trò | Vòng đời | File Rule & Văn Phong Bắt Buộc Luôn Nạp | Skills Kích Hoạt Thêm Khi Cần (`.agents/skills/<name>/SKILL.md`) |
 | :--- | :--- | :--- | :--- |
-| **`Lead Agent`** | Sống suốt phiên | [`.agents/rules/lead.md`](.agents/rules/lead.md) | `doc-adr-sync` (tạo ADR / đồng bộ doc) \| `high-signal-writing` |
-| **`Debate Auditor`** | **Sống song hành cùng Lead** (Reset khi `/compact`) | [`.agents/rules/debate-auditor.md`](.agents/rules/debate-auditor.md) | `high-signal-writing` (Ghi đè phản biện vào `.agents/DEBATE_LOG.md`) |
-| **`Indexer Agent`** | Ephemeral (Kill sau task) | [`.agents/rules/indexer.md`](.agents/rules/indexer.md) | `codebase-indexing` (quy trình AST & mẫu Map) \| `high-signal-writing` |
-| **`Worker Agent`** | Ephemeral (Kill sau task) | [`.agents/rules/worker.md`](.agents/rules/worker.md) | `deep-code-wiki` (duyệt sâu code viết Wiki) \| `doc-adr-sync` |
-| **`Code Auditor`** | Ephemeral (Kill sau task) | [`.agents/rules/auditor.md`](.agents/rules/auditor.md) | `high-signal-writing` \| `doc-adr-sync` (khi kiểm định code / Wiki / ADR) |
+| **`Lead Agent`** | Sống suốt phiên | [`.agents/rules/lead.md`](.agents/rules/lead.md) + `high-signal-writing` | `doc-adr-sync` (tạo ADR / đồng bộ doc) |
+| **`Debate Auditor`** | **Sống song hành cùng Lead** (Reset khi `/compact`) | [`.agents/rules/debate-auditor.md`](.agents/rules/debate-auditor.md) + `high-signal-writing` | Không |
+| **`Indexer Agent`** | Ephemeral (Kill sau task) | [`.agents/rules/indexer.md`](.agents/rules/indexer.md) + `high-signal-writing` | `codebase-indexing` (quy trình AST & mẫu Map) |
+| **`Worker Agent`** | Ephemeral (Kill sau task) | [`.agents/rules/worker.md`](.agents/rules/worker.md) + `high-signal-writing` | `deep-code-wiki` (duyệt sâu code viết Wiki) \| `doc-adr-sync` |
+| **`Code Auditor`** | Ephemeral (Kill sau task) | [`.agents/rules/auditor.md`](.agents/rules/auditor.md) + `high-signal-writing` | `doc-adr-sync` (khi kiểm định code / Wiki / ADR) |

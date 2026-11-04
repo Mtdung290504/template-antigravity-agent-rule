@@ -15,7 +15,7 @@ description: >-
 ## 1. Quy Chuẩn `docs/decisions/NNN-<slug>.md` (ADR)
 
 - **Quy tắc phân tách:** Mỗi file `docs/decisions/NNN-<kebab-slug>.md` chỉ chứa **duy nhất 1 quyết định kiến trúc** (< 120 dòng) và được đăng ký 1 dòng vào `DOC_MAP.md`.
-- **4 Sự kiện Kích hoạt Sinh File ADR Mới (Trigger Conditions):**
+- **4 Sự kiện Kích hoạt Sinh File ADR Mới:**
   1. Chọn hoặc thay thế công nghệ / thư viện lõi.
   2. Thay đổi hợp đồng giao tiếp (`API`/`IPC`) hoặc mô hình dữ liệu / lưu trữ.
   3. Thiết lập rào chắn cấm (`Hard Invariants`) sau thử nghiệm thất bại hoặc sự cố bảo mật.

@@ -1,7 +1,7 @@
 # Cấu hình Model cho 4 vai trò Subagent (Sửa tay hoặc để 'ask' cho Lead hỏi & tự cache)
 # - inherit    : Sao chép 100% Model + Reasoning đang chọn ở UI chính (Khuyên dùng cho Debate Auditor & Code Auditor)
-# - pro        : Cố định Gemini 4 Argon (Phản biện chéo nếu UI chính đang chọn Claude)
-# - flash      : Cố định Gemini 3.8 Flash (Nhanh, dồi dào quota - Khuyên dùng cho Indexer & Worker để tránh đứt gãy giữa chừng)
+# - pro        : Cố định Gemini 4 Argon Medium (Phản biện chéo nếu UI chính đang chọn Claude)
+# - flash      : Cố định Gemini 3.8 Flash Medium (Nhanh, dồi dào quota - Khuyên dùng cho Indexer & Worker để tránh đứt gãy giữa chừng)
 # - flash_lite : Flash siêu nhẹ
 # - ask        : Lead bật ask_question ở Turn 1 rồi tự ghi đè lựa chọn vào 4 biến dưới đây
 
