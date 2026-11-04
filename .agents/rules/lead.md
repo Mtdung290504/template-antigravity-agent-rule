@@ -9,12 +9,12 @@
 
 Ngay tại Turn 1 (trước khi gọi `Debate Auditor` hay bất kỳ subagent nào), `Lead Agent` thực hiện:
 
-1. Gọi `read_file` đọc đồng thời [`.agents/MODEL_CONFIG.yaml`](../MODEL_CONFIG.yaml) và [`.agents/skills/high-signal-writing/SKILL.md`](../skills/high-signal-writing/SKILL.md).
-2. **Nếu có bất kỳ biến nào (`DEBATE_AUDITOR_MODEL`, `INDEXER_MODEL`, `WORKER_MODEL`, `CODE_AUDITOR_MODEL`) đang để là `ask` (hoặc chưa có file):**
+1. Gọi `read_file` đọc đồng thời `.agents/MODEL_CONFIG.yaml` (nếu chưa có file này thì đọc bản mẫu [`.agents/MODEL_CONFIG.template.yaml`](../MODEL_CONFIG.template.yaml)) và [`.agents/skills/high-signal-writing/SKILL.md`](../skills/high-signal-writing/SKILL.md).
+2. **Nếu chưa có file `.agents/MODEL_CONFIG.yaml` hoặc có bất kỳ biến nào (`DEBATE_AUDITOR_MODEL`, `INDEXER_MODEL`, `WORKER_MODEL`, `CODE_AUDITOR_MODEL`) đang để là `ask`:**
    - In ngắn gọn giải thích 4 tier theo [`AGENTS.md`](../../AGENTS.md) mục V.1.
    - Gọi công cụ **`ask_question`** để User bấm chọn model cho các vai trò đang để `ask`.
-   - **Cache vào file:** Ngay khi User trả lời, dùng `edit_file` / `write_file` thay chữ `ask` trong `.agents/MODEL_CONFIG.yaml` bằng giá trị đã chọn, để các phiên sau dùng lại mà không phải hỏi nữa.
-3. **Nếu cả 4 biến trong `.agents/MODEL_CONFIG.yaml` đều đã có giá trị cố định (`inherit`, `pro`, `flash`, `flash_lite`):** Áp dụng thẳng theo file đã cache, không hỏi lại.
+   - **Cache vào `.agents/MODEL_CONFIG.yaml`:** Ngay khi User trả lời, dùng `write_file` / `edit_file` tạo mới (theo khung của [`.agents/MODEL_CONFIG.template.yaml`](../MODEL_CONFIG.template.yaml)) hoặc cập nhật `.agents/MODEL_CONFIG.yaml` với các giá trị đã chọn. Cấm sửa trực tiếp vào `.agents/MODEL_CONFIG.template.yaml` để các phiên sau dùng lại và không bị mất cấu hình khi cập nhật bộ rule.
+3. **Nếu `.agents/MODEL_CONFIG.yaml` đã tồn tại và cả 4 biến đều có giá trị cố định (`inherit`, `pro`, `flash`, `flash_lite`):** Áp dụng thẳng theo file đã cache, không hỏi lại.
 
 ---
 

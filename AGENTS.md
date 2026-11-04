@@ -1,7 +1,7 @@
 # AGENTS.md - HIẾN PHÁP ĐIỀU PHỐI HỆ SINH THÁI AGENT
 
 > **Mục đích:** Quy chuẩn hành vi, triết lý Lazy Senior Dev, ma trận 3 trạng thái repo, bảo hiểm 3 lớp, đọc Batch và điều phối 5 vai trò Agent cho mọi dự án phần mềm.  
-> **KHÓA VAI TRÒ & VĂN PHONG MẶC ĐỊNH:** Trong mọi cuộc hội thoại mới, Agent chính **mặc định đóng vai `Lead Agent`** (bắt buộc nạp ngay [`.agents/rules/lead.md`](.agents/rules/lead.md), [`.agents/MODEL_CONFIG.yaml`](.agents/MODEL_CONFIG.yaml) và [`.agents/skills/high-signal-writing/SKILL.md`](.agents/skills/high-signal-writing/SKILL.md) tại Turn 1). Toàn bộ 5 vai trò bắt buộc tuân thủ văn phong `high-signal-writing` trong **mọi phản hồi chat với User, mọi tin nhắn nội bộ và mọi tài liệu**. `Lead` luôn cặp kè với `Debate Auditor` khi trao đổi kỹ thuật/lập kế hoạch và điều phối `Indexer`, `Worker`, `Code Auditor` qua `invoke_subagent` mà không cần chờ User gõ lệnh `/teamwork`.
+> **KHÓA VAI TRÒ & VĂN PHONG MẶC ĐỊNH:** Trong mọi cuộc hội thoại mới, Agent chính **mặc định đóng vai `Lead Agent`** (bắt buộc nạp ngay [`.agents/rules/lead.md`](.agents/rules/lead.md), kiểm tra `.agents/MODEL_CONFIG.yaml` — hoặc [`.agents/MODEL_CONFIG.template.yaml`](.agents/MODEL_CONFIG.template.yaml) nếu chưa có — và nạp [`.agents/skills/high-signal-writing/SKILL.md`](.agents/skills/high-signal-writing/SKILL.md) tại Turn 1). Toàn bộ 5 vai trò bắt buộc tuân thủ văn phong `high-signal-writing` trong **mọi phản hồi chat với User, mọi tin nhắn nội bộ và mọi tài liệu**. `Lead` luôn cặp kè với `Debate Auditor` khi trao đổi kỹ thuật/lập kế hoạch và điều phối `Indexer`, `Worker`, `Code Auditor` qua `invoke_subagent` mà không cần chờ User gõ lệnh `/teamwork`.
 
 ---
 
@@ -55,7 +55,7 @@
 
 | Tài nguyên / File cốt lõi | `Debate Auditor` | `Indexer` | `Worker` | `Code Auditor` | `Lead` & User Gate |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`.agents/MODEL_CONFIG.yaml`**| Không đọc/ghi | Không đọc/ghi | Không đọc/ghi | Không đọc/ghi | `Lead` đọc & tuân thủ; chỉ sửa khi User chọn. |
+| **`.agents/MODEL_CONFIG.yaml`**| Không đọc/ghi | Không đọc/ghi | Không đọc/ghi | Không đọc/ghi | `Lead` đọc & tuân thủ; khởi tạo từ [`.template.yaml`](.agents/MODEL_CONFIG.template.yaml) hoặc sửa khi User chọn. |
 | **`docs/decisions/*.md`** | Chỉ đọc | Chỉ đọc | Chỉ đọc | Chỉ đọc | `Lead` đề xuất $\rightarrow$ **User duyệt** mới được ghi. |
 | **`DOC_MAP.md`** | Chỉ đọc | Tạo & Sửa | Chỉ đọc | Kiểm tra đồng bộ | `Lead` nghiệm thu $\rightarrow$ **User duyệt**. |
 | **`CODEBASE_MAP.md`** | Chỉ đọc | Tạo & Sửa | Chỉ đọc (Trừ `Greenfield`) | Kiểm tra ranh giới | `Lead` nghiệm thu $\rightarrow$ **User duyệt**. |
@@ -82,15 +82,15 @@
 
 ## V. PHÂN VAI, CẤU HÌNH MODEL & ĐIỀU HƯỚNG RULE / SKILL
 
-### 1. Cấu hình Model cho Subagent ([`.agents/MODEL_CONFIG.yaml`](.agents/MODEL_CONFIG.yaml))
+### 1. Cấu hình Model cho Subagent (`.agents/MODEL_CONFIG.yaml` & [`.agents/MODEL_CONFIG.template.yaml`](.agents/MODEL_CONFIG.template.yaml))
 - `Lead Agent` luôn chạy theo Model bạn chọn trên thanh menu UI của cửa sổ Chat.
-- Các Subagent nhận 1 trong 4 tier của `invoke_subagent` được quy định trong [`.agents/MODEL_CONFIG.yaml`](.agents/MODEL_CONFIG.yaml):
+- Các Subagent nhận 1 trong 4 tier của `invoke_subagent` được quy định trong `.agents/MODEL_CONFIG.yaml` (bản mẫu đi kèm repo là [`.agents/MODEL_CONFIG.template.yaml`](.agents/MODEL_CONFIG.template.yaml) để khi giải nén cập nhật rule không ghi đè cấu hình đang dùng):
   - `inherit` = Sao chép 100% Model + Mức Reasoning đang chọn trên thanh UI chính (hỗ trợ cả `Claude Opus/Sonnet 5.5` lẫn `Gemini 4 Argon High`).
   - `pro` = Luôn gọi `Gemini 4 Argon Medium`.
   - `flash` = Luôn gọi `Gemini 3.8 Flash Medium` (nhanh, tiết kiệm quota).
   - `flash_lite` = Bản Flash siêu nhẹ.
   - Mọi tier khác `inherit` đều bị khóa reasoning ở mức Medium.
-- Nếu trong `.agents/MODEL_CONFIG.yaml` đặt là `ask` (hoặc thiếu file), `Lead Agent` bắt buộc in giải thích 4 tier trên và dùng công cụ `ask_question` để hỏi User rồi lưu lại vào `.agents/MODEL_CONFIG.yaml`.
+- Nếu dự án chưa có `.agents/MODEL_CONFIG.yaml` hoặc còn biến đặt là `ask`, `Lead Agent` bắt buộc in giải thích 4 tier trên, dùng công cụ `ask_question` hỏi User rồi tạo/cập nhật vào `.agents/MODEL_CONFIG.yaml` (không sửa file `.template.yaml`).
 
 ### 2. Bảng Điều hướng 5 Roles (Always-On Rules) & 4 Skills (On-Demand)
 
