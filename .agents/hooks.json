@@ -19,6 +19,33 @@
         "timeout": 10
       }
     ]
+  },
+  "doc-sync-reminder": {
+    "PostToolUse": [
+      {
+        "matcher": "write_file|edit_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/record-touched-files.js",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node scripts/check-doc-sync.js",
+        "timeout": 5
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node scripts/cleanup-doc-sync.js",
+        "timeout": 5
+      }
+    ]
   }
 }
-

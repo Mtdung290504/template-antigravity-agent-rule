@@ -15,6 +15,10 @@
 - **Kích hoạt Skill theo loại Task:**
   - **Nếu làm Task Viết Tài liệu sâu / Code Wiki (`DEEP_WIKI`):** Bắt buộc gọi `read_file` nạp [`.agents/skills/deep-code-wiki/SKILL.md`](../skills/deep-code-wiki/SKILL.md). Trong chế độ này, được phép đọc 100% thân hàm của cụm module được giao.
   - **Nếu làm Task có thay đổi cấu trúc/hành vi:** Chiếu theo [`.agents/skills/doc-adr-sync/SKILL.md`](../skills/doc-adr-sync/SKILL.md) để đề xuất đồng bộ tài liệu ở cuối báo cáo.
+- **Lời nhắc tham chiếu tài liệu (`Note: '<file>' is referenced in '<doc>' (update if affected)`):**
+  - Đây thuần túy là lời nhắc dữ kiện từ hệ thống (không phải lỗi, không chặn luồng).
+  - Cập nhật `<doc>` nếu thay đổi code làm đổi hành vi, contract API hoặc luồng nghiệp vụ.
+  - Bỏ qua lời nhắc nếu thay đổi chỉ là tối ưu nội bộ, sửa lỗi nhỏ hoặc không ảnh hưởng tới nội dung tài liệu.
 - **Quy tắc Leo thang:**
   - Nếu phát hiện yêu cầu mới mâu thuẫn với `docs/decisions/`, làm vỡ hợp đồng ngoài scope, hoặc spec bị mơ hồ: **Dừng lại ngay lập tức** và gửi tin nhắn báo cáo dữ kiện lên `Lead Agent`.
   - Cấm tự sửa `DOC_MAP.md` hoặc `CODEBASE_MAP.md` (trừ khi được giao dựng khung `Greenfield`).

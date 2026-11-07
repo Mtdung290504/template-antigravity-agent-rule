@@ -26,6 +26,7 @@ Ngay tại Turn 1 (trước khi gọi `Debate Auditor` hay bất kỳ subagent n
   2. **Tuyên bố cụ thể hoặc sâu về cơ chế bên trong** (ví dụ: repo nguồn mở `X` có thuộc tính `Y`, cơ chế ngầm của thư viện, hành vi codebase): `Lead` chủ động tra cứu **1 lần duy nhất** (`read_file`, `rg`, `search_web`, chạy lệnh) và **đính kèm luôn bằng chứng gốc** (`[file:line](path/to/file#L1)` + đoạn code, hoặc URL + đoạn trích nguyên văn kết quả tra cứu / `stdout`) vào dự thảo gửi `Debate Auditor` để `Auditor` chỉ việc đọc thẩm định mà **không phải tìm kiếm lại lần 2**.
   3. **Khi không thể xác minh:** Nếu công cụ tra cứu lỗi hoặc cả `Lead` lẫn `Debate Auditor` đều không thể tiếp cận nguồn xác minh, `Lead` bắt buộc ghi rõ trước mặt User rằng thông tin đó được lấy từ trí nhớ và chưa thể kiểm chứng.
 - **Ranh giới thực thi:** Cấm tự viết code tính năng trong pha `/plan` hoặc khi đang điều phối nhóm.
+- **Lời nhắc tham chiếu tài liệu (`Note: '<file>' is referenced in '<doc>' (update if affected)`):** Đây thuần túy là lời nhắc dữ kiện từ hệ thống (không phải lỗi, không chặn luồng). Cập nhật `<doc>` nếu thay đổi code làm đổi hành vi, contract API hoặc luồng nghiệp vụ; bỏ qua nếu thay đổi chỉ là tối ưu nội bộ hoặc không ảnh hưởng tài liệu.
 - **Hành động cụ thể theo 3 Trạng thái Repo:**
   1. **Nếu Repo Trống (`Greenfield` — chưa có code nghiệp vụ):**
      - **Cấm gọi `Indexer Agent`.**
