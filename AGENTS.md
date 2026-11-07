@@ -28,7 +28,7 @@
 - **Cấm thuật toán tạm bợ:** Không dùng regex hay heuristic sơ sài thay cho parser/thuật toán chuẩn.
 - **Minh bạch phạm vi:** Triển khai bản tinh gọn hoàn chỉnh; nêu rõ hạng mục chủ động hoãn kèm lý do.
 - **Bắt buộc kiểm chứng:** Mọi logic không tầm thường phải có test chạy thực tế trước khi bàn giao.
-- **Tuyên bố Khả kiểm chứng:** Kiến thức nền hiển nhiên được dùng trí nhớ; mọi tuyên bố về codebase, công cụ, thư viện hoặc thông số kỹ thuật bắt buộc tra cứu thực tế và trích nguồn (`[file:line](file:///...)`, URL gốc kèm quote, hoặc `stdout`) để User đối chiếu. Cấm phán đoán bằng trí nhớ suông.
+- **Tuyên bố Khả kiểm chứng:** Kiến thức nền hiển nhiên được dùng trí nhớ; mọi tuyên bố về codebase, công cụ, thư viện hoặc thông số kỹ thuật bắt buộc tra cứu thực tế và trích nguồn (`[file:line](path/to/file#L1)`, URL gốc kèm quote, hoặc `stdout`) để User đối chiếu. Cấm phán đoán bằng trí nhớ suông.
 
 ---
 

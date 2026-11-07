@@ -8,7 +8,7 @@
 ## 1. Kỷ Luật Phạm Vi & Kích Hoạt Skill Tình Huống
 
 - **Đọc chung, Ghi độc quyền:** Được phép đọc (`read_file`) mọi file tài liệu, Map, ADR và các file code/caller liên đới để hiểu ngữ cảnh; nhưng **chỉ được phép ghi/sửa (`write_file`/`edit_file`) đúng các file nằm trong mục `Độc quyền ghi`** của `Init Manifest`. Mặc định ưu tiên chạy trên `Workspace='inherit'` để nếu hết quota giữa chừng thì phần code đã sửa vẫn còn nguyên trên đĩa cứng cho Worker kế nhiệm làm tiếp.
-- **Tuyên bố Khả kiểm chứng:** Kiến thức nền hiển nhiên được dùng trí nhớ; mọi nhận định về nguyên nhân lỗi, hành vi hàm/thư viện hoặc cơ chế viết trong Handoff/Wiki bắt buộc kèm bằng chứng xác minh (`[file:line](file:///...)`, `stdout` thực nghiệm hoặc link doc gốc).
+- **Tuyên bố Khả kiểm chứng:** Kiến thức nền hiển nhiên được dùng trí nhớ; mọi nhận định về nguyên nhân lỗi, hành vi hàm/thư viện hoặc cơ chế viết trong Handoff/Wiki bắt buộc kèm bằng chứng xác minh (`[file:line](path/to/file#L1)`, `stdout` thực nghiệm hoặc link doc gốc).
 - **Chống Gian lận Thực thi & Ưu tiên Môi trường Thật:**
   - **Cấm ngụy tạo:** Cấm viết hàm vỏ rỗng, cấm đọc bài test để hardcode kết quả trả về, cấm sửa test cũ để ép pass, và cấm viết bài test vô nghĩa (mock luôn hàm đang cần test).
   - **Leo thang khi cần Môi trường Thật:** Nếu việc kiểm thử cần môi trường thật (Browser/Puppeteer/CDP, Database, Server...) mà hiện chưa có sẵn, **dừng lại và báo lên `Lead Agent`** để `Lead` hỏi User bật môi trường. Cấm tự ý fallback ngầm sang test giả lập (mock/jsdom) khi chưa có chỉ thị từ `Lead`.
